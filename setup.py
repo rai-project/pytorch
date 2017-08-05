@@ -13,6 +13,10 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'Click>=6.0',
+    "grpcio",
+    "grpcio-tools",
+    "http://download.pytorch.org/whl/torch-0.1.12.post2-cp36-cp36m-macosx_10_7_x86_64.whl",
+    "torchvision"
     # TODO: put package requirements here
 ]
 

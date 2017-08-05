@@ -28,6 +28,18 @@ help:
 
 clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
 
+generate:
+	mkdir -p pytorch_predictor/dlframework
+	python -m grpc_tools.protoc -I../dlframework \
+		--python_out=pytorch_predictor/dlframework \
+		--grpc_python_out=pytorch_predictor/dlframework \
+		-I$(GOPATH)/src \
+		-I$(GOPATH)/src/github.com/golang/protobuf/proto \
+		-I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
+		../dlframework/dlframework.proto
+
+clean-generate:
+	rm -fr pytorch_predictor/dlframework/*pb2*.py
 
 clean-build: ## remove build artifacts
 	rm -fr build/
@@ -52,7 +64,7 @@ lint: ## check style with flake8
 
 test: ## run tests quickly with the default Python
 	py.test
-	
+
 
 test-all: ## run tests on every Python version with tox
 	tox
