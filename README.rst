@@ -1,0 +1,40 @@
+=================
+pytorch_predictor
+=================
+
+
+.. image:: https://img.shields.io/pypi/v/pytorch_predictor.svg
+        :target: https://pypi.python.org/pypi/pytorch_predictor
+
+.. image:: https://img.shields.io/travis/rai-project/pytorch_predictor.svg
+        :target: https://travis-ci.org/rai-project/pytorch_predictor
+
+.. image:: https://readthedocs.org/projects/pytorch-predictor/badge/?version=latest
+        :target: https://pytorch-predictor.readthedocs.io/en/latest/?badge=latest
+        :alt: Documentation Status
+
+.. image:: https://pyup.io/repos/github/rai-project/pytorch_predictor/shield.svg
+     :target: https://pyup.io/repos/github/rai-project/pytorch_predictor/
+     :alt: Updates
+
+
+Python Boilerplate contains all the boilerplate you need to create a Python package.
+
+
+* Free software: MIT license
+* Documentation: https://pytorch-predictor.readthedocs.io.
+
+
+Features
+--------
+
+* TODO
+
+Credits
+---------
+
+This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+
+.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+
