@@ -30,7 +30,7 @@ clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and 
 
 generate:
 	mkdir -p pytorch_predictor/dlframework
-	python -m grpc_tools.protoc -I../dlframework \
+	python3 -m grpc_tools.protoc -I../dlframework \
 		--python_out=pytorch_predictor/dlframework \
 		--grpc_python_out=pytorch_predictor/dlframework \
 		-I$(GOPATH)/src \

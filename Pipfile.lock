@@ -1,0 +1,78 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "a4eadff4a4a8fe33c871222d3a0c72c8c7087d089e098e91d9e8ac0f3bc2a21d"
+        },
+        "requires": {},
+        "sources": [
+            {
+                "url": "https://pypi.python.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "bumpversion": {
+            "version": "==0.5.3"
+        },
+        "flake8": {
+            "version": "==3.4.1"
+        },
+        "grpcio": {
+            "version": "==1.4.0"
+        },
+        "grpcio-tools": {
+            "version": "==1.4.0"
+        },
+        "http://download.pytorch.org/whl/torch-0.1.12.post2-cp36-cp36m-macosx-10-7-x86-64.whl": "*",
+        "mccabe": {
+            "version": "==0.6.1"
+        },
+        "pillow": {
+            "version": "==4.2.1"
+        },
+        "pluggy": {
+            "version": "==0.4.0"
+        },
+        "protobuf": {
+            "version": "==3.4.0"
+        },
+        "py": {
+            "version": "==1.4.34"
+        },
+        "pycodestyle": {
+            "version": "==2.3.1"
+        },
+        "pyflakes": {
+            "version": "==1.5.0"
+        },
+        "pyyaml": {
+            "version": "==3.12"
+        },
+        "setuptools": {
+            "version": "==36.2.7"
+        },
+        "six": {
+            "version": "==1.10.0"
+        },
+        "torch": {
+            "version": "==0.1.2.post1"
+        },
+        "torchvision": {
+            "version": "==0.1.9"
+        },
+        "tox": {
+            "version": "==2.7.0"
+        },
+        "virtualenv": {
+            "version": "==15.1.0"
+        },
+        "wheel": {
+            "version": "==0.29.0"
+        },
+        "yapf": {
+            "version": "==0.17.0"
+        }
+    },
+    "develop": {}
+}
