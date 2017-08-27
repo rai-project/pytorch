@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a4eadff4a4a8fe33c871222d3a0c72c8c7087d089e098e91d9e8ac0f3bc2a21d"
+            "sha256": "2790032cdb8a01b0da748fc265d7b7cf870b36f62bab750b66fce51ba2c41c64"
         },
         "requires": {},
         "sources": [
@@ -28,8 +28,8 @@
         "mccabe": {
             "version": "==0.6.1"
         },
-        "pillow": {
-            "version": "==4.2.1"
+        "numpy": {
+            "version": "==1.13.1"
         },
         "pluggy": {
             "version": "==0.4.0"
