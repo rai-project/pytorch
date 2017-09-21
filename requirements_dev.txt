@@ -10,4 +10,4 @@ cryptography==2.0.3
 PyYAML==3.12
 pytest==3.2.2
 pytest-runner==2.12.1
-yapf==0.16.3
+yapf==0.18.0
