@@ -1,99 +1,29 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help
-.DEFAULT_GOAL := help
-define BROWSER_PYSCRIPT
-import os, webbrowser, sys
-try:
-	from urllib import pathname2url
-except:
-	from urllib.request import pathname2url
+all: generate
 
-webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
-endef
-export BROWSER_PYSCRIPT
+fmt:
+	go fmt ./...
 
-define PRINT_HELP_PYSCRIPT
-import re, sys
+install-deps:
+	go get github.com/jteeuwen/go-bindata/...
+	go get github.com/elazarl/go-bindata-assetfs/...
 
-for line in sys.stdin:
-	match = re.match(r'^([a-zA-Z_-]+):.*?## (.*)$$', line)
-	if match:
-		target, help = match.groups()
-		print("%-20s %s" % (target, help))
-endef
-export PRINT_HELP_PYSCRIPT
-BROWSER := python -c "$$BROWSER_PYSCRIPT"
+glide-install:
+	glide install --force
 
-help:
-	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
+logrus-fix:
+	rm -fr vendor/github.com/Sirupsen
+	find vendor -type f -exec sed -i 's/Sirupsen/sirupsen/g' {} +
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
+generate: clean generate-models
 
-generate:
-	mkdir -p pytorch_predictor/dlframework
-	python3 -m grpc_tools.protoc -I../dlframework \
-		--python_out=pytorch_predictor/dlframework \
-		--grpc_python_out=pytorch_predictor/dlframework \
-		-I$(GOPATH)/src \
-		-I$(GOPATH)/src/github.com/golang/protobuf/proto \
-		-I$(GOPATH)/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-		../dlframework/dlframework.proto
+generate-models:
+	go-bindata -nomemcopy -prefix builtin_models/ -pkg pytorch -o builtin_models_static.go -ignore=.DS_Store  -ignore=README.md builtin_models/...
 
-clean-generate:
-	rm -fr pytorch_predictor/dlframework/*pb2*.py
+clean-models:
+	rm -fr builtin_models_static.go
 
-clean-build: ## remove build artifacts
-	rm -fr build/
-	rm -fr dist/
-	rm -fr .eggs/
-	find . -name '*.egg-info' -exec rm -fr {} +
-	find . -name '*.egg' -exec rm -f {} +
+clean: clean-models
 
-clean-pyc: ## remove Python file artifacts
-	find . -name '*.pyc' -exec rm -f {} +
-	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '*~' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +
-
-clean-test: ## remove test and coverage artifacts
-	rm -fr .tox/
-	rm -f .coverage
-	rm -fr htmlcov/
-
-lint: ## check style with flake8
-	flake8 pytorch_predictor tests
-
-test: ## run tests quickly with the default Python
-	py.test
-
-
-test-all: ## run tests on every Python version with tox
-	tox
-
-coverage: ## check code coverage quickly with the default Python
-	coverage run --source pytorch_predictor -m pytest
-	coverage report -m
-	coverage html
-	$(BROWSER) htmlcov/index.html
-
-docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/pytorch_predictor.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ pytorch_predictor
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
-
-servedocs: docs ## compile the docs watching for changes
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
-
-release: clean ## package and upload a release
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
-
-dist: clean ## builds source and wheel package
-	python setup.py sdist
-	python setup.py bdist_wheel
-	ls -l dist
-
-install: clean ## install the package to the active Python's site-packages
-	python setup.py install
+travis: install-deps glide-install logrus-fix generate
+	echo "building..."
+	go build

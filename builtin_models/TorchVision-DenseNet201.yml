@@ -1,0 +1,49 @@
+name: TorchVision-DenseNet201 # name of your model
+framework:
+  name: Pytorch # framework for the model
+  version: 1.0 # framework version contraint
+version: 1.0 # version information in semantic version format
+container: # containers used to perform model prediction
+           # multiple platforms can be specified
+  amd64:
+    gpu: raiproject/carml-pytorch:amd64-cpu
+    cpu: raiproject/carml-pytorch:amd64-gpu
+  ppc64le:
+    cpu: raiproject/carml-pytorch:ppc64le-gpu
+    gpu: raiproject/carml-pytorch:ppc64le-gpu
+description: >
+  This model is a replication of the model described in the DenseNet publication.
+  All pre-trained models expect input images normalized in the same way, i.e. mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are expected to be atleast 224. The images have to be loaded in to a range of [0, 1] and then normalized using mean = [0.485, 0.456, 0.406] and std = [0.229, 0.224, 0.225] 
+references: # references to papers / websites / etc.. describing the model
+  - https://pytorch-zh.readthedocs.io/en/latest/torchvision/models.html
+  - https://arxiv.org/pdf/1608.06993.pdf
+# license of the model
+license: unrestricted
+# inputs to the model
+inputs:
+  # first input type for the model
+  - type: image
+    # description of the first input
+    description: the input image
+    parameters: # type parameters
+      dimensions: [3, 227, 227]
+      mean: [123, 117, 104] #TODO
+output:
+  # the type of the output
+  type: feature
+  # a description of the output parameter
+  description: the output label
+  parameters:
+    # type parameters
+    features_url: http://data.dmlc.ml/mxnet/models/imagenet/synset.txt
+    features_checksum: 4d234b5833aca44928065a180db3016a
+model: # specifies model graph and weights resources
+  graph_path: https://s3.amazonaws.com/store.carml.org/models/pytorch/densenet201.pt
+  is_archive: false # if set, then the base_url is a url to an archive
+                    # the graph_path and weights_path then denote the
+                    # file names of the graph and weights within the archive
+  graph_checksum: fdb525acaa8d3db0f87c5577901f53ee #TODO
+attributes: # extra network attributes
+  kind: CNN # the kind of neural network (CNN, RNN, ...)
+  training_dataset: ImageNet # dataset used to for training
+  manifest_author: abduld
