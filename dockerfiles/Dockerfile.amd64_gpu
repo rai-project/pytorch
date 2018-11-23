@@ -1,0 +1,29 @@
+FROM carml/go-pytorch:amd64-gpu-latest
+MAINTAINER Abdul Dakkak <dakkak@illinois.edu>
+
+
+# Build-time metadata as defined at http://label-schema.org
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VCS_URL
+ARG VERSION
+LABEL org.mlmodelscope.pytorch.agent.build-date=$BUILD_DATE \
+      org.mlmodelscope.pytorch.agent.name="pytorch agent" \
+      org.mlmodelscope.pytorch.agent.description="" \
+      org.mlmodelscope.pytorch.agent.url="https://www.mlmodelscope.org/" \
+      org.mlmodelscope.pytorch.agent.vcs-ref=$VCS_REF \
+      org.mlmodelscope.pytorch.agent.vcs-url=$VCS_URL \
+      org.mlmodelscope.pytorch.agent.vendor="MLModelScope" \
+      org.mlmodelscope.pytorch.agent.version=$VERSION \
+      org.mlmodelscope.pytorch.agent.schema-version="1.0"
+
+
+# Get Go bindings
+ENV PKG github.com/rai-project/pytorch
+WORKDIR $GOPATH/src/$PKG
+
+RUN git clone --depth=1 --branch=master https://${PKG}.git . && \
+    dep ensure -v && \
+    go build -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
+    go install && \
+    rm -fr vendor
