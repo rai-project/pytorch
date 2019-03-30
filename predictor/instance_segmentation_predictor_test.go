@@ -15,9 +15,9 @@ import (
 	gotensor "gorgonia.org/tensor"
 )
 
-func TestObjectDetection(t *testing.T) {
+func TestInstanceSegmentation(t *testing.T) {
 	py.Register()
-	model, err := py.FrameworkManifest.FindModel("ssd_mobilenet_v1_coco:1.0")
+	model, err := py.FrameworkManifest.FindModel("mask_rcnn_inception_v2_coco:1.0")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, model)
 
@@ -32,7 +32,7 @@ func TestObjectDetection(t *testing.T) {
 		options.Device(device, 0),
 		options.BatchSize(batchSize))
 
-	predictor, err := NewObjectDetectionPredictor(*model, options.WithOptions(opts))
+	predictor, err := NewInstanceSegmentationPredictor(*model, options.WithOptions(opts))
 	assert.NoError(t, err)
 	assert.NotEmpty(t, predictor)
 	defer predictor.Close()
@@ -73,5 +73,5 @@ func TestObjectDetection(t *testing.T) {
 		return
 	}
 
-	assert.InDelta(t, float32(0.936415), pred[0][0].GetProbability(), 0.001)
+	assert.InDelta(t, float32(0.998607), pred[0][0].GetProbability(), 0.001)
 }

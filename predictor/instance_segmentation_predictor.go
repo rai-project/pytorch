@@ -22,26 +22,25 @@ import (
 	gopytorch "github.com/rai-project/go-pytorch"
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/pytorch"
-	"github.com/rai-project/tensorflow"
-	proto "github.com/rai-project/tensorflow"
 	"github.com/rai-project/tracer"
 	gotensor "gorgonia.org/tensor"
 )
 
-type ObjectDetectionPredictor struct {
+type InstanceSegmentationPredictor struct {
 	common.ImagePredictor
 	labels             []string
 	inputLayer         string
 	boxesLayer         string
 	probabilitiesLayer string
 	classesLayer       string
+	masksLayer         string
 	boxes              interface{}
 	probabilities      interface{}
 	classes            interface{}
+	masks              interface{}
 }
 
-// New ...
-func NewObjectDetectionPredictor(model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
+func NewInstanceSegmentationPredictor(model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
 	ctx := context.Background()
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "new_predictor")
 	defer span.Finish()
@@ -55,13 +54,13 @@ func NewObjectDetectionPredictor(model dlframework.ModelManifest, opts ...option
 		return nil, errors.New("input type not supported")
 	}
 
-	predictor := new(ObjectDetectionPredictor)
+	predictor := new(InstanceSegmentationPredictor)
 
 	return predictor.Load(context.Background(), model, opts...)
 }
 
 // Download ...
-func (p *ObjectDetectionPredictor) Download(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) error {
+func (p *InstanceSegmentationPredictor) Download(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) error {
 	framework, err := model.ResolveFramework()
 	if err != nil {
 		return err
@@ -72,7 +71,7 @@ func (p *ObjectDetectionPredictor) Download(ctx context.Context, model dlframewo
 		return err
 	}
 
-	ip := &ObjectDetectionPredictor{
+	ip := &InstanceSegmentationPredictor{
 		ImagePredictor: common.ImagePredictor{
 			Base: common.Base{
 				Framework: framework,
@@ -90,8 +89,7 @@ func (p *ObjectDetectionPredictor) Download(ctx context.Context, model dlframewo
 	return nil
 }
 
-// Load ...
-func (p *ObjectDetectionPredictor) Load(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
+func (p *InstanceSegmentationPredictor) Load(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
 	framework, err := model.ResolveFramework()
 	if err != nil {
 		return nil, err
@@ -102,7 +100,7 @@ func (p *ObjectDetectionPredictor) Load(ctx context.Context, model dlframework.M
 		return nil, err
 	}
 
-	ip := &ObjectDetectionPredictor{
+	ip := &InstanceSegmentationPredictor{
 		ImagePredictor: common.ImagePredictor{
 			Base: common.Base{
 				Framework: framework,
@@ -124,7 +122,7 @@ func (p *ObjectDetectionPredictor) Load(ctx context.Context, model dlframework.M
 	return ip, nil
 }
 
-func (p *ObjectDetectionPredictor) download(ctx context.Context) error {
+func (p *InstanceSegmentationPredictor) download(ctx context.Context) error {
 	span, ctx := opentracing.StartSpanFromContext(
 		ctx,
 		"download",
@@ -182,9 +180,13 @@ func (p *ObjectDetectionPredictor) download(ctx context.Context) error {
 	return nil
 }
 
-func (p *ObjectDetectionPredictor) loadPredictor(ctx context.Context) error {
+func (p *InstanceSegmentationPredictor) loadPredictor(ctx context.Context) error {
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "load_predictor")
 	defer span.Finish()
+
+	if p.tfSession != nil {
+		return nil
+	}
 
 	span.LogFields(
 		olog.String("event", "read features"),
@@ -228,11 +230,15 @@ func (p *ObjectDetectionPredictor) loadPredictor(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get the classes layer name")
 	}
+	p.masksLayer, err = p.GetOutputLayerName(modelReader, "masks_layer")
+	if err != nil {
+		return errors.Wrap(err, "failed to get the masks layer name")
+	}
 
 	return nil
 }
 
-func (p ObjectDetectionPredictor) GetInputLayerName(reader io.Reader, layer string) (string, error) {
+func (p InstanceSegmentationPredictor) GetInputLayerName(reader io.Reader, layer string) (string, error) {
 	model := p.Model
 	modelInputs := model.GetInputs()
 	typeParameters := modelInputs[0].GetParameters()
@@ -244,7 +250,7 @@ func (p ObjectDetectionPredictor) GetInputLayerName(reader io.Reader, layer stri
 	return name, nil
 }
 
-func (p ObjectDetectionPredictor) GetOutputLayerName(reader io.Reader, layer string) (string, error) {
+func (p InstanceSegmentationPredictor) GetOutputLayerName(reader io.Reader, layer string) (string, error) {
 	model := p.Model
 	modelOutput := model.GetOutput()
 	typeParameters := modelOutput.GetParameters()
@@ -256,7 +262,7 @@ func (p ObjectDetectionPredictor) GetOutputLayerName(reader io.Reader, layer str
 	return name, nil
 }
 
-func (p *ObjectDetectionPredictor) runOptions() *proto.RunOptions {
+func (p *InstanceSegmentationPredictor) runOptions() *proto.RunOptions {
 	if p.TraceLevel() >= tracer.FRAMEWORK_TRACE {
 		return &proto.RunOptions{
 			TraceLevel: proto.RunOptions_SOFTWARE_TRACE,
@@ -266,7 +272,7 @@ func (p *ObjectDetectionPredictor) runOptions() *proto.RunOptions {
 }
 
 // Predict ...
-func (p *ObjectDetectionPredictor) Predict(ctx context.Context, data interface{}, opts ...options.Option) error {
+func (p *InstanceSegmentationPredictor) Predict(ctx context.Context, data interface{}, opts ...options.Option) error {
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "predict")
 	defer span.Finish()
 
@@ -282,41 +288,40 @@ func (p *ObjectDetectionPredictor) Predict(ctx context.Context, data interface{}
 	if err != nil {
 		return err
 	}
-
-	sessionSpan, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "c_predict")
-	// TODO interface object detection call to predictor backend
+	// TODO interface image enhancement call to predictor backend
 	return nil
 }
 
 // ReadPredictedFeatures ...
-func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([]dlframework.Features, error) {
+func (p *InstanceSegmentationPredictor) ReadPredictedFeatures(ctx context.Context) ([]dlframework.Features, error) {
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "read_predicted_features")
 	defer span.Finish()
 
 	boxes := p.boxes.([][][]float32)
 	probabilities := p.probabilities.([][]float32)
 	classes := p.classes.([][]float32)
+	masks := p.masks.([][][][]float32)
 
-	return p.CreateBoundingBoxFeatures(ctx, probabilities, classes, boxes, p.labels)
+	return p.CreateInstanceSegmentFeatures(ctx, probabilities, classes, boxes, masks, p.labels)
 }
 
-func (p *ObjectDetectionPredictor) Reset(ctx context.Context) error {
+func (p *InstanceSegmentationPredictor) Reset(ctx context.Context) error {
 
 	return nil
 }
 
-func (p *ObjectDetectionPredictor) Close() error {
+func (p *InstanceSegmentationPredictor) Close() error {
 	return nil
 }
 
-func (p ObjectDetectionPredictor) Modality() (dlframework.Modality, error) {
-	return dlframework.ImageObjectDetectionModality, nil
+func (p InstanceSegmentationPredictor) Modality() (dlframework.Modality, error) {
+	return dlframework.ImageInstanceSegmentationModality, nil
 }
 
 func init() {
 	config.AfterInit(func() {
 		framework := pytorch.FrameworkManifest
-		agent.AddPredictor(framework, &ObjectDetectionPredictor{
+		agent.AddPredictor(framework, &InstanceSegmentationPredictor{
 			ImagePredictor: common.ImagePredictor{
 				Base: common.Base{
 					Framework: framework,

@@ -1,12 +1,10 @@
 package predictor
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"io"
 	"io/ioutil"
-	"os"
 	"runtime"
 	"strings"
 
@@ -22,26 +20,18 @@ import (
 	gopytorch "github.com/rai-project/go-pytorch"
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/pytorch"
-	"github.com/rai-project/tensorflow"
-	proto "github.com/rai-project/tensorflow"
 	"github.com/rai-project/tracer"
 	gotensor "gorgonia.org/tensor"
 )
 
-type ObjectDetectionPredictor struct {
+type ImageEnhancementPredictor struct {
 	common.ImagePredictor
-	labels             []string
-	inputLayer         string
-	boxesLayer         string
-	probabilitiesLayer string
-	classesLayer       string
-	boxes              interface{}
-	probabilities      interface{}
-	classes            interface{}
+	inputLayer  string
+	outputLayer string
+	images      interface{}
 }
 
-// New ...
-func NewObjectDetectionPredictor(model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
+func NewImageEnhancementPredictor(model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
 	ctx := context.Background()
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "new_predictor")
 	defer span.Finish()
@@ -55,13 +45,13 @@ func NewObjectDetectionPredictor(model dlframework.ModelManifest, opts ...option
 		return nil, errors.New("input type not supported")
 	}
 
-	predictor := new(ObjectDetectionPredictor)
+	predictor := new(ImageEnhancementPredictor)
 
 	return predictor.Load(context.Background(), model, opts...)
 }
 
 // Download ...
-func (p *ObjectDetectionPredictor) Download(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) error {
+func (p *ImageEnhancementPredictor) Download(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) error {
 	framework, err := model.ResolveFramework()
 	if err != nil {
 		return err
@@ -72,7 +62,7 @@ func (p *ObjectDetectionPredictor) Download(ctx context.Context, model dlframewo
 		return err
 	}
 
-	ip := &ObjectDetectionPredictor{
+	ip := &ImageEnhancementPredictor{
 		ImagePredictor: common.ImagePredictor{
 			Base: common.Base{
 				Framework: framework,
@@ -90,8 +80,7 @@ func (p *ObjectDetectionPredictor) Download(ctx context.Context, model dlframewo
 	return nil
 }
 
-// Load ...
-func (p *ObjectDetectionPredictor) Load(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
+func (p *ImageEnhancementPredictor) Load(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
 	framework, err := model.ResolveFramework()
 	if err != nil {
 		return nil, err
@@ -102,7 +91,7 @@ func (p *ObjectDetectionPredictor) Load(ctx context.Context, model dlframework.M
 		return nil, err
 	}
 
-	ip := &ObjectDetectionPredictor{
+	ip := &ImageEnhancementPredictor{
 		ImagePredictor: common.ImagePredictor{
 			Base: common.Base{
 				Framework: framework,
@@ -124,7 +113,7 @@ func (p *ObjectDetectionPredictor) Load(ctx context.Context, model dlframework.M
 	return ip, nil
 }
 
-func (p *ObjectDetectionPredictor) download(ctx context.Context) error {
+func (p *ImageEnhancementPredictor) download(ctx context.Context) error {
 	span, ctx := opentracing.StartSpanFromContext(
 		ctx,
 		"download",
@@ -133,8 +122,6 @@ func (p *ObjectDetectionPredictor) download(ctx context.Context) error {
 			"target_graph_file":   p.GetGraphPath(),
 			"weights_url":         p.GetWeightsUrl(),
 			"target_weights_file": p.GetWeightsPath(),
-			"feature_url":         p.GetFeaturesUrl(),
-			"target_feature_file": p.GetFeaturesPath(),
 		},
 	)
 	defer span.Finish()
@@ -165,43 +152,16 @@ func (p *ObjectDetectionPredictor) download(ctx context.Context) error {
 		}
 	}
 
-	span.LogFields(
-		olog.String("event", "download features"),
-	)
-	checksum := p.GetFeaturesChecksum()
-	if checksum != "" {
-		if _, err := downloadmanager.DownloadFile(p.GetFeaturesUrl(), p.GetFeaturesPath(), downloadmanager.MD5Sum(checksum)); err != nil {
-			return err
-		}
-	} else {
-		if _, err := downloadmanager.DownloadFile(p.GetFeaturesUrl(), p.GetFeaturesPath()); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
-func (p *ObjectDetectionPredictor) loadPredictor(ctx context.Context) error {
+func (p *ImageEnhancementPredictor) loadPredictor(ctx context.Context) error {
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "load_predictor")
 	defer span.Finish()
 
-	span.LogFields(
-		olog.String("event", "read features"),
-	)
-
-	var labels []string
-	f, err := os.Open(p.GetFeaturesPath())
-	if err != nil {
-		return errors.Wrapf(err, "cannot read %s", p.GetFeaturesPath())
+	if p.tfSession != nil {
+		return nil
 	}
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		line := scanner.Text()
-		labels = append(labels, line)
-	}
-	p.labels = labels
 
 	span.LogFields(
 		olog.String("event", "read graph"),
@@ -211,28 +171,26 @@ func (p *ObjectDetectionPredictor) loadPredictor(ctx context.Context) error {
 		return errors.Wrapf(err, "cannot read %s", p.GetGraphPath())
 	}
 
+	// Construct an in-memory graph from the serialized form.
+	graph := tf.NewGraph()
+	if err := graph.Import(model, ""); err != nil {
+		return errors.Wrap(err, "unable to create tensorflow model graph")
+	}
+
 	modelReader := bytes.NewReader(model)
 	p.inputLayer, err = p.GetInputLayerName(modelReader, "input_layer")
 	if err != nil {
-		return errors.Wrap(err, "failed to get input layer name")
+		return errors.Wrap(err, "failed to get the input layer name")
 	}
-	p.boxesLayer, err = p.GetOutputLayerName(modelReader, "boxes_layer")
+	p.outputLayer, err = p.GetOutputLayerName(modelReader, "output_layer")
 	if err != nil {
-		return errors.Wrap(err, "failed to get the boxes layer name")
-	}
-	p.probabilitiesLayer, err = p.GetOutputLayerName(modelReader, "probabilities_layer")
-	if err != nil {
-		return errors.Wrap(err, "failed to get the probabilities layer name")
-	}
-	p.classesLayer, err = p.GetOutputLayerName(modelReader, "classes_layer")
-	if err != nil {
-		return errors.Wrap(err, "failed to get the classes layer name")
+		return errors.Wrap(err, "failed to get the output layer name")
 	}
 
 	return nil
 }
 
-func (p ObjectDetectionPredictor) GetInputLayerName(reader io.Reader, layer string) (string, error) {
+func (p ImageEnhancementPredictor) GetInputLayerName(reader io.Reader, layer string) (string, error) {
 	model := p.Model
 	modelInputs := model.GetInputs()
 	typeParameters := modelInputs[0].GetParameters()
@@ -244,7 +202,7 @@ func (p ObjectDetectionPredictor) GetInputLayerName(reader io.Reader, layer stri
 	return name, nil
 }
 
-func (p ObjectDetectionPredictor) GetOutputLayerName(reader io.Reader, layer string) (string, error) {
+func (p ImageEnhancementPredictor) GetOutputLayerName(reader io.Reader, layer string) (string, error) {
 	model := p.Model
 	modelOutput := model.GetOutput()
 	typeParameters := modelOutput.GetParameters()
@@ -256,7 +214,7 @@ func (p ObjectDetectionPredictor) GetOutputLayerName(reader io.Reader, layer str
 	return name, nil
 }
 
-func (p *ObjectDetectionPredictor) runOptions() *proto.RunOptions {
+func (p *ImageEnhancementPredictor) runOptions() *proto.RunOptions {
 	if p.TraceLevel() >= tracer.FRAMEWORK_TRACE {
 		return &proto.RunOptions{
 			TraceLevel: proto.RunOptions_SOFTWARE_TRACE,
@@ -265,8 +223,30 @@ func (p *ObjectDetectionPredictor) runOptions() *proto.RunOptions {
 	return nil
 }
 
+func makeUniformImage() [][][][]float32 {
+	images := make([][][][]float32, 10)
+	width := 1000
+	height := 1000
+	for ii := range images {
+		sl := make([][][]float32, height)
+		for jj := range sl {
+			el := make([][]float32, width)
+			for kk := range el {
+				el[kk] = []float32{1, 0, 1}
+			}
+			sl[jj] = el
+		}
+		images[ii] = sl
+	}
+	return images
+}
+
 // Predict ...
-func (p *ObjectDetectionPredictor) Predict(ctx context.Context, data interface{}, opts ...options.Option) error {
+func (p *ImageEnhancementPredictor) Predict(ctx context.Context, data interface{}, opts ...options.Option) error {
+	// p.images = makeUniformImage()
+
+	// return nil
+
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "predict")
 	defer span.Finish()
 
@@ -278,45 +258,48 @@ func (p *ObjectDetectionPredictor) Predict(ctx context.Context, data interface{}
 		return errors.New("input data is not slice of dense tensors")
 	}
 
+	session := p.tfSession
+	graph := p.tfGraph
+
 	tensor, err := makeTensorFromGoTensors(input)
 	if err != nil {
 		return err
 	}
 
 	sessionSpan, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "c_predict")
-	// TODO interface object detection call to predictor backend
+	// TODO interface image enhancement call to predictor backend
 	return nil
 }
 
 // ReadPredictedFeatures ...
-func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([]dlframework.Features, error) {
+func (p *ImageEnhancementPredictor) ReadPredictedFeatures(ctx context.Context) ([]dlframework.Features, error) {
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "read_predicted_features")
 	defer span.Finish()
 
-	boxes := p.boxes.([][][]float32)
-	probabilities := p.probabilities.([][]float32)
-	classes := p.classes.([][]float32)
-
-	return p.CreateBoundingBoxFeatures(ctx, probabilities, classes, boxes, p.labels)
+	e, ok := p.images.([][][][]float32)
+	if !ok {
+		return nil, errors.New("output is not of type [][][][]float32")
+	}
+	return p.CreateRawImageFeatures(ctx, e)
 }
 
-func (p *ObjectDetectionPredictor) Reset(ctx context.Context) error {
+func (p *ImageEnhancementPredictor) Reset(ctx context.Context) error {
 
 	return nil
 }
 
-func (p *ObjectDetectionPredictor) Close() error {
+func (p *ImageEnhancementPredictor) Close() error {
 	return nil
 }
 
-func (p ObjectDetectionPredictor) Modality() (dlframework.Modality, error) {
-	return dlframework.ImageObjectDetectionModality, nil
+func (p ImageEnhancementPredictor) Modality() (dlframework.Modality, error) {
+	return dlframework.ImageEnhancementModality, nil
 }
 
 func init() {
 	config.AfterInit(func() {
 		framework := pytorch.FrameworkManifest
-		agent.AddPredictor(framework, &ObjectDetectionPredictor{
+		agent.AddPredictor(framework, &ImageEnhancementPredictor{
 			ImagePredictor: common.ImagePredictor{
 				Base: common.Base{
 					Framework: framework,
