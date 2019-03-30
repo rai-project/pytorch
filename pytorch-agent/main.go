@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rai-project/pytorch"
-	_ "github.com/rai-project/pytorch/predict"
 	cmd "github.com/rai-project/dlframework/framework/cmd/server"
 	_ "github.com/rai-project/monitoring/monitors"
+	"github.com/rai-project/pytorch"
+	_ "github.com/rai-project/pytorch/predict"
 	"github.com/rai-project/tracer"
 )
 
