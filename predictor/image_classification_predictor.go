@@ -25,8 +25,8 @@ import (
 	gotensor "gorgonia.org/tensor"
 )
 
-// ImagePredictor ...
-type ImagePredictor struct {
+// ImageClassificationPredictor ...
+type ImageClassificationPredictor struct {
 	common.ImagePredictor
 	labels    []string
 	predictor *gopytorch.Predictor
@@ -47,7 +47,7 @@ func NewImageClassificationPredictor(model dlframework.ModelManifest, opts ...op
 		return nil, errors.New("input type not supported")
 	}
 
-	predictor := new(ImagePredictor)
+	predictor := new(ImageClassificationPredictor)
 
 	return predictor.Load(ctx, model, opts...)
 }
@@ -64,7 +64,7 @@ func (p *ImageClassificationPredictor) Download(ctx context.Context, model dlfra
 		return err
 	}
 
-	ip := &ImagePredictor{
+	ip := &ImageClassificationPredictor{
 		ImagePredictor: common.ImagePredictor{
 			Base: common.Base{
 				Framework: framework,
@@ -94,7 +94,7 @@ func (p *ImageClassificationPredictor) Load(ctx context.Context, model dlframewo
 		return nil, err
 	}
 
-	ip := &ImagePredictor{
+	ip := &ImageClassificationPredictor{
 		ImagePredictor: common.ImagePredictor{
 			Base: common.Base{
 				Framework: framework,
@@ -242,6 +242,7 @@ func (p *ImageClassificationPredictor) loadPredictor(ctx context.Context) error 
 // Predict ...
 func (p *ImageClassificationPredictor) Predict(ctx context.Context, data interface{}, opts ...options.Option) error {
 	if p.TraceLevel() >= tracer.FRAMEWORK_TRACE {
+		p.predictor.EnableProfiling()
 		err := p.predictor.StartProfiling("pytorch", "predict")
 		if err != nil {
 			log.WithError(err).WithField("framework", "pytorch").Error("unable to start framework profiling")
@@ -322,7 +323,7 @@ func (p ImageClassificationPredictor) Modality() (dlframework.Modality, error) {
 func init() {
 	config.AfterInit(func() {
 		framework := pytorch.FrameworkManifest
-		agent.AddPredictor(framework, &ImagePredictor{
+		agent.AddPredictor(framework, &ImageClassificationPredictor{
 			ImagePredictor: common.ImagePredictor{
 				Base: common.Base{
 					Framework: framework,
