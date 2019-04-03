@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"runtime"
 	"strings"
 
 	opentracing "github.com/opentracing/opentracing-go"
@@ -20,10 +19,7 @@ import (
 	common "github.com/rai-project/dlframework/framework/predictor"
 	"github.com/rai-project/downloadmanager"
 	gopytorch "github.com/rai-project/go-pytorch"
-	nvidiasmi "github.com/rai-project/nvidia-smi"
 	"github.com/rai-project/pytorch"
-	"github.com/rai-project/tensorflow"
-	proto "github.com/rai-project/tensorflow"
 	"github.com/rai-project/tracer"
 	gotensor "gorgonia.org/tensor"
 )

@@ -316,7 +316,7 @@ func (p *ImageClassificationPredictor) Close() error {
 	return nil
 }
 
-func (p ImageClassificationPredictor) Modality() (dlframework.Modality, error) {
+func (p *ImageClassificationPredictor) Modality() (dlframework.Modality, error) {
 	return dlframework.ImageClassificationModality, nil
 }
 
