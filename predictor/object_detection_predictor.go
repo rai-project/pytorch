@@ -204,8 +204,21 @@ func (p *ObjectDetectionPredictor) loadPredictor(ctx context.Context) error {
 	p.labels = labels
 
 	span.LogFields(
-		olog.String("event", "read graph"),
+		olog.String("event", "create predictor"),
 	)
+
+	opts, err := p.GetPredictionOptions(ctx)
+	if err != nil {
+		return err
+	}
+
+	pred, err := gopytorch.New(ctx, options.WithOptions(opts), options.Graph([]byte(p.GetGraphPath())))
+	if err != nil {
+		return err
+	}
+
+	p.predictor = pred
+
 	model, err := ioutil.ReadFile(p.GetGraphPath())
 	if err != nil {
 		return errors.Wrapf(err, "cannot read %s", p.GetGraphPath())
