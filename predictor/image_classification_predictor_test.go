@@ -50,7 +50,7 @@ func normalizeImageCHW(in *types.RGBImage, mean []float32, scale float32) ([]flo
 }
 func TestPredictorNew(t *testing.T) {
 	py.Register()
-	model, err := py.FrameworkManifest.FindModel("torchvision-alexnet:1.0")
+	model, err := py.FrameworkManifest.FindModel("torchvision_alexnet:1.0")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, model)
 
@@ -65,6 +65,7 @@ func TestPredictorNew(t *testing.T) {
 }
 
 func TestImageClassification(t *testing.T) {
+	py.Register()
 	model, err := py.FrameworkManifest.FindModel("torchvision_alexnet:1.0")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, model)
