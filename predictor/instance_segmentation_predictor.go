@@ -114,15 +114,14 @@ package predictor
 // 	return ip, nil
 // }
 
-// func (p *InstanceSegmentationPredictor) download(ctx context.Context) error {
-// 	span, ctx := opentracing.StartSpanFromContext(
+// func (p *ImageClassificationPredictor) download(ctx context.Context) error {
+// 	span, ctx := tracer.StartSpanFromContext(
 // 		ctx,
+// 		tracer.APPLICATION_TRACE,
 // 		"download",
 // 		opentracing.Tags{
 // 			"graph_url":           p.GetGraphUrl(),
 // 			"target_graph_file":   p.GetGraphPath(),
-// 			"weights_url":         p.GetWeightsUrl(),
-// 			"target_weights_file": p.GetWeightsPath(),
 // 			"feature_url":         p.GetFeaturesUrl(),
 // 			"target_feature_file": p.GetFeaturesPath(),
 // 		},
@@ -154,6 +153,23 @@ package predictor
 // 			}
 // 		}
 // 	}
+
+// 	span.LogFields(
+// 		olog.String("event", "download features"),
+// 	)
+// 	checksum := p.GetFeaturesChecksum()
+// 	if checksum != "" {
+// 		if _, err := downloadmanager.DownloadFile(p.GetFeaturesUrl(), p.GetFeaturesPath(), downloadmanager.MD5Sum(checksum)); err != nil {
+// 			return err
+// 		}
+// 	} else {
+// 		if _, err := downloadmanager.DownloadFile(p.GetFeaturesUrl(), p.GetFeaturesPath()); err != nil {
+// 			return err
+// 		}
+// 	}
+
+// 	return nil
+// }
 
 // 	span.LogFields(
 // 		olog.String("event", "download features"),
