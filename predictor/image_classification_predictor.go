@@ -17,8 +17,6 @@ import (
 	common "github.com/rai-project/dlframework/framework/predictor"
 	"github.com/rai-project/downloadmanager"
 	gopytorch "github.com/rai-project/go-pytorch"
-	"github.com/rai-project/image"
-	"github.com/rai-project/image/types"
 	"github.com/rai-project/pytorch"
 	"github.com/rai-project/tracer"
 	"github.com/rai-project/tracer/ctimer"
@@ -28,8 +26,8 @@ import (
 // ImageClassificationPredictor ...
 type ImageClassificationPredictor struct {
 	common.ImagePredictor
-	labels    []string
 	predictor *gopytorch.Predictor
+	labels    []string
 }
 
 // New ...
@@ -114,33 +112,6 @@ func (p *ImageClassificationPredictor) Load(ctx context.Context, model dlframewo
 	}
 
 	return ip, nil
-}
-
-// GetPreprocessOptions ...
-func (p *ImageClassificationPredictor) GetPreprocessOptions(ctx context.Context) (common.PreprocessOptions, error) {
-	mean, err := p.GetMeanImage()
-	if err != nil {
-		return common.PreprocessOptions{}, err
-	}
-
-	scale, err := p.GetScale()
-	if err != nil {
-		return common.PreprocessOptions{}, err
-	}
-
-	imageDims, err := p.GetImageDimensions()
-	if err != nil {
-		return common.PreprocessOptions{}, err
-	}
-
-	return common.PreprocessOptions{
-		Context:   ctx,
-		MeanImage: mean,
-		Scale:     scale,
-		Size:      []int{int(imageDims[1]), int(imageDims[2])},
-		ColorMode: types.BGRMode,
-		Layout:    image.CHWLayout,
-	}, nil
 }
 
 func (p *ImageClassificationPredictor) download(ctx context.Context) error {
@@ -299,7 +270,7 @@ func (p *ImageClassificationPredictor) ReadPredictedFeatures(ctx context.Context
 		return nil, err
 	}
 
-	return p.CreateClassificationFeatures(ctx, output, p.labels)
+	return p.CreateClassificationFeaturesFrom1D(ctx, output, p.labels)
 }
 
 // Reset ...

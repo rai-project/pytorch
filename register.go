@@ -10,7 +10,7 @@ import (
 
 // FrameworkManifest ...
 var FrameworkManifest = dlframework.FrameworkManifest{
-	Name:    "Pytorch",
+	Name:    "PyTorch",
 	Version: "1.0",
 	Container: map[string]*dlframework.ContainerHardware{
 		"amd64": {
@@ -35,5 +35,8 @@ func assetFS() *assetfs.AssetFS {
 }
 
 func Register() {
-	framework.Register(FrameworkManifest, assetFS())
+	err := framework.Register(FrameworkManifest, assetFS())
+	if err != nil {
+		log.WithError(err).Error("Failed to register server")
+    }
 }

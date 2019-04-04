@@ -1,4 +1,4 @@
-package predictor
+package pytorch
 
 import (
 	"github.com/rai-project/config"
@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	log *logrus.Entry
+	log *logrus.Entry = logger.New().WithField("pkg", "pytorch")
 )
 
 func init() {
 	config.AfterInit(func() {
-		log = logger.New().WithField("pkg", "pytorch/predictor")
+		log = logger.New().WithField("pkg", "pytorch")
 	})
 }

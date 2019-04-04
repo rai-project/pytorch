@@ -6,9 +6,8 @@ fmt:
 install-deps:
 	go get github.com/jteeuwen/go-bindata/...
 	go get github.com/elazarl/go-bindata-assetfs/...
-
-glide-install:
-	glide install --force
+	go get github.com/golang/dep
+	dep ensure -v
 
 logrus-fix:
 	rm -fr vendor/github.com/Sirupsen

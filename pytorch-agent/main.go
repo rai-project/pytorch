@@ -5,14 +5,13 @@ import (
 	"os"
 
 	cmd "github.com/rai-project/dlframework/framework/cmd/server"
-	_ "github.com/rai-project/monitoring/monitors"
 	"github.com/rai-project/pytorch"
-	_ "github.com/rai-project/pytorch/predict"
+	_ "github.com/rai-project/pytorch/predictor"
 	"github.com/rai-project/tracer"
 )
 
 func main() {
-	rootCmd, err := cmd.NewRootCommand(pytorch.Register, caffe.FrameworkManifest)
+	rootCmd, err := cmd.NewRootCommand(pytorch.Register, pytorch.FrameworkManifest)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
