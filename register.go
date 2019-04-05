@@ -38,5 +38,5 @@ func Register() {
 	err := framework.Register(FrameworkManifest, assetFS())
 	if err != nil {
 		log.WithError(err).Error("Failed to register server")
-    }
+	}
 }

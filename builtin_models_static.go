@@ -539,26 +539,26 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"TorchVision_AlexNet.yml": torchvision_alexnetYml,
+	"TorchVision_AlexNet.yml":           torchvision_alexnetYml,
 	"TorchVision_DenseNet_v1.0_121.yml": torchvision_densenet_v10_121Yml,
 	"TorchVision_DenseNet_v1.0_161.yml": torchvision_densenet_v10_161Yml,
 	"TorchVision_DenseNet_v1.0_169.yml": torchvision_densenet_v10_169Yml,
 	"TorchVision_DenseNet_v1.0_201.yml": torchvision_densenet_v10_201Yml,
-	"TorchVision_ResNet_v1.0_101.yml": torchvision_resnet_v10_101Yml,
-	"TorchVision_ResNet_v1.0_152.yml": torchvision_resnet_v10_152Yml,
-	"TorchVision_ResNet_v1.0_18.yml": torchvision_resnet_v10_18Yml,
-	"TorchVision_ResNet_v1.0_34.yml": torchvision_resnet_v10_34Yml,
-	"TorchVision_ResNet_v1.0_50.yml": torchvision_resnet_v10_50Yml,
-	"TorchVision_SqueezeNet_v1.0.yml": torchvision_squeezenet_v10Yml,
-	"TorchVision_SqueezeNet_v1.1.yml": torchvision_squeezenet_v11Yml,
-	"TorchVision_VGG_1.0_11.yml": torchvision_vgg_10_11Yml,
-	"TorchVision_VGG_1.0_11_BN.yml": torchvision_vgg_10_11_bnYml,
-	"TorchVision_VGG_1.0_13.yml": torchvision_vgg_10_13Yml,
-	"TorchVision_VGG_1.0_13_BN.yml": torchvision_vgg_10_13_bnYml,
-	"TorchVision_VGG_1.0_16.yml": torchvision_vgg_10_16Yml,
-	"TorchVision_VGG_1.0_16_BN.yml": torchvision_vgg_10_16_bnYml,
-	"TorchVision_VGG_1.0_19.yml": torchvision_vgg_10_19Yml,
-	"TorchVision_VGG_1.0_19_BN.yml": torchvision_vgg_10_19_bnYml,
+	"TorchVision_ResNet_v1.0_101.yml":   torchvision_resnet_v10_101Yml,
+	"TorchVision_ResNet_v1.0_152.yml":   torchvision_resnet_v10_152Yml,
+	"TorchVision_ResNet_v1.0_18.yml":    torchvision_resnet_v10_18Yml,
+	"TorchVision_ResNet_v1.0_34.yml":    torchvision_resnet_v10_34Yml,
+	"TorchVision_ResNet_v1.0_50.yml":    torchvision_resnet_v10_50Yml,
+	"TorchVision_SqueezeNet_v1.0.yml":   torchvision_squeezenet_v10Yml,
+	"TorchVision_SqueezeNet_v1.1.yml":   torchvision_squeezenet_v11Yml,
+	"TorchVision_VGG_1.0_11.yml":        torchvision_vgg_10_11Yml,
+	"TorchVision_VGG_1.0_11_BN.yml":     torchvision_vgg_10_11_bnYml,
+	"TorchVision_VGG_1.0_13.yml":        torchvision_vgg_10_13Yml,
+	"TorchVision_VGG_1.0_13_BN.yml":     torchvision_vgg_10_13_bnYml,
+	"TorchVision_VGG_1.0_16.yml":        torchvision_vgg_10_16Yml,
+	"TorchVision_VGG_1.0_16_BN.yml":     torchvision_vgg_10_16_bnYml,
+	"TorchVision_VGG_1.0_19.yml":        torchvision_vgg_10_19Yml,
+	"TorchVision_VGG_1.0_19_BN.yml":     torchvision_vgg_10_19_bnYml,
 }
 
 // AssetDir returns the file names below a certain
@@ -600,27 +600,28 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
-	"TorchVision_AlexNet.yml": &bintree{torchvision_alexnetYml, map[string]*bintree{}},
+	"TorchVision_AlexNet.yml":           &bintree{torchvision_alexnetYml, map[string]*bintree{}},
 	"TorchVision_DenseNet_v1.0_121.yml": &bintree{torchvision_densenet_v10_121Yml, map[string]*bintree{}},
 	"TorchVision_DenseNet_v1.0_161.yml": &bintree{torchvision_densenet_v10_161Yml, map[string]*bintree{}},
 	"TorchVision_DenseNet_v1.0_169.yml": &bintree{torchvision_densenet_v10_169Yml, map[string]*bintree{}},
 	"TorchVision_DenseNet_v1.0_201.yml": &bintree{torchvision_densenet_v10_201Yml, map[string]*bintree{}},
-	"TorchVision_ResNet_v1.0_101.yml": &bintree{torchvision_resnet_v10_101Yml, map[string]*bintree{}},
-	"TorchVision_ResNet_v1.0_152.yml": &bintree{torchvision_resnet_v10_152Yml, map[string]*bintree{}},
-	"TorchVision_ResNet_v1.0_18.yml": &bintree{torchvision_resnet_v10_18Yml, map[string]*bintree{}},
-	"TorchVision_ResNet_v1.0_34.yml": &bintree{torchvision_resnet_v10_34Yml, map[string]*bintree{}},
-	"TorchVision_ResNet_v1.0_50.yml": &bintree{torchvision_resnet_v10_50Yml, map[string]*bintree{}},
-	"TorchVision_SqueezeNet_v1.0.yml": &bintree{torchvision_squeezenet_v10Yml, map[string]*bintree{}},
-	"TorchVision_SqueezeNet_v1.1.yml": &bintree{torchvision_squeezenet_v11Yml, map[string]*bintree{}},
-	"TorchVision_VGG_1.0_11.yml": &bintree{torchvision_vgg_10_11Yml, map[string]*bintree{}},
-	"TorchVision_VGG_1.0_11_BN.yml": &bintree{torchvision_vgg_10_11_bnYml, map[string]*bintree{}},
-	"TorchVision_VGG_1.0_13.yml": &bintree{torchvision_vgg_10_13Yml, map[string]*bintree{}},
-	"TorchVision_VGG_1.0_13_BN.yml": &bintree{torchvision_vgg_10_13_bnYml, map[string]*bintree{}},
-	"TorchVision_VGG_1.0_16.yml": &bintree{torchvision_vgg_10_16Yml, map[string]*bintree{}},
-	"TorchVision_VGG_1.0_16_BN.yml": &bintree{torchvision_vgg_10_16_bnYml, map[string]*bintree{}},
-	"TorchVision_VGG_1.0_19.yml": &bintree{torchvision_vgg_10_19Yml, map[string]*bintree{}},
-	"TorchVision_VGG_1.0_19_BN.yml": &bintree{torchvision_vgg_10_19_bnYml, map[string]*bintree{}},
+	"TorchVision_ResNet_v1.0_101.yml":   &bintree{torchvision_resnet_v10_101Yml, map[string]*bintree{}},
+	"TorchVision_ResNet_v1.0_152.yml":   &bintree{torchvision_resnet_v10_152Yml, map[string]*bintree{}},
+	"TorchVision_ResNet_v1.0_18.yml":    &bintree{torchvision_resnet_v10_18Yml, map[string]*bintree{}},
+	"TorchVision_ResNet_v1.0_34.yml":    &bintree{torchvision_resnet_v10_34Yml, map[string]*bintree{}},
+	"TorchVision_ResNet_v1.0_50.yml":    &bintree{torchvision_resnet_v10_50Yml, map[string]*bintree{}},
+	"TorchVision_SqueezeNet_v1.0.yml":   &bintree{torchvision_squeezenet_v10Yml, map[string]*bintree{}},
+	"TorchVision_SqueezeNet_v1.1.yml":   &bintree{torchvision_squeezenet_v11Yml, map[string]*bintree{}},
+	"TorchVision_VGG_1.0_11.yml":        &bintree{torchvision_vgg_10_11Yml, map[string]*bintree{}},
+	"TorchVision_VGG_1.0_11_BN.yml":     &bintree{torchvision_vgg_10_11_bnYml, map[string]*bintree{}},
+	"TorchVision_VGG_1.0_13.yml":        &bintree{torchvision_vgg_10_13Yml, map[string]*bintree{}},
+	"TorchVision_VGG_1.0_13_BN.yml":     &bintree{torchvision_vgg_10_13_bnYml, map[string]*bintree{}},
+	"TorchVision_VGG_1.0_16.yml":        &bintree{torchvision_vgg_10_16Yml, map[string]*bintree{}},
+	"TorchVision_VGG_1.0_16_BN.yml":     &bintree{torchvision_vgg_10_16_bnYml, map[string]*bintree{}},
+	"TorchVision_VGG_1.0_19.yml":        &bintree{torchvision_vgg_10_19Yml, map[string]*bintree{}},
+	"TorchVision_VGG_1.0_19_BN.yml":     &bintree{torchvision_vgg_10_19_bnYml, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
@@ -669,4 +670,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-

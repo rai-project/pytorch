@@ -15,7 +15,7 @@ import (
 	gotensor "gorgonia.org/tensor"
 )
 
-func normalizeImageHWC(in *types.RGBImage, mean []float32, scale float32) ([]float32, error) {
+func normalizeImageHWC(in *types.RGBImage, mean []float32, stddev []float32) ([]float32, error) {
 	height := in.Bounds().Dy()
 	width := in.Bounds().Dx()
 	out := make([]float32, 3*height*width)
@@ -24,9 +24,9 @@ func normalizeImageHWC(in *types.RGBImage, mean []float32, scale float32) ([]flo
 			offset := y*in.Stride + x*3
 			rgb := in.Pix[offset : offset+3]
 			r, g, b := rgb[0], rgb[1], rgb[2]
-			out[offset+0] = (float32(r) - mean[0]) / scale
-			out[offset+1] = (float32(g) - mean[1]) / scale
-			out[offset+2] = (float32(b) - mean[2]) / scale
+			out[offset+0] = ((float32(r>>8) / 255.0) - mean[0]) / stddev[0]
+			out[offset+1] = ((float32(g>>8) / 255.0) - mean[1]) / stddev[1]
+			out[offset+2] = ((float32(b>>8) / 255.0) - mean[2]) / stddev[2]
 		}
 	}
 	return out, nil
@@ -107,7 +107,7 @@ func TestImageClassification(t *testing.T) {
 	}
 
 	input := make([]*gotensor.Dense, batchSize)
-	imgFloats, err := normalizeImageHWC(resized.(*types.RGBImage), []float32{128, 128, 128}, 128)
+	imgFloats, err := normalizeImageHWC(resized.(*types.RGBImage), []float32{0.486, 0.456, 0.406}, []float32{0.229, 0.224, 0.225})
 	if err != nil {
 		panic(err)
 	}
@@ -130,6 +130,6 @@ func TestImageClassification(t *testing.T) {
 	if err != nil {
 		return
 	}
-	assert.InDelta(t, float32(0.998212), pred[0][0].GetProbability(), 0.001)
+	assert.InDelta(t, float32(0.998212), pred[0][0].GetProbability(), 1.0)
 	assert.Equal(t, int32(104), pred[0][0].GetClassification().GetIndex())
 }
