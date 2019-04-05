@@ -9,45 +9,43 @@
 
 ## Installation
 
-Download and install the MLModelScope TensorFlow Agent:
+Download and install the MLModelScope PyTorch Agent:
 
 ```
 go get -v github.com/rai-project/pytorch
 
 ```
 
-The agent requires The TensorFlow C library and other Go packages.
+The agent requires PyTorch C++ library (Libtorch).
 
-#### The TensorFlow C library
 
-The TensorFlow C library is required for the TensorFlow Go package.
-You can download pre-built TensorFlow C library from [Install TensorFlow for C](https://www.pytorch.org/install/lang_c).
+## Libtorch Installation
 
-Extract the downloaded archive to `/opt/pytorch/`.
+### Pre-built Binaries
 
-```
-tar -C /opt/pytorch -xzf (downloaded file)
-```
+Download the relevant `Libtorch` pre-built binary available on [Pytorch website](https://pytorch.org). Note that we provide the option of profiling through pytorch's in-built autograd profiler. Incidentally, Pytorch C++ frontend does not have access to the autograd profiler as per release `1.0.1`. Kindly download nightly build post March 24th 2019 to enable the profiling. Without profiling, our codebase should be compatible with prior versions.
 
-Configure the linker environmental variables since the TensorFlow C library is extracted to a non-system directory. Place the following in either your `~/.bashrc` or `~/.zshrc` file
+### Build From Source
+
+Refer to `$GOPATH/src/github.com/rai-project/go-pytorch/dockerfiles` to know how to build `Libtorch` from source. Note that one can also use `build_libtorch.py` script provided as part of the Pytorch repository to do the same.
+
+Place the extracted/built library to `/opt/libtorch/`.
+
+Configure the linker environmental variables since Libtorch library has been extracted to a non-system directory. Place the following in either your `~/.bashrc` or `~/.zshrc` file
 
 Linux
 
 ```
-export LIBRARY_PATH=$LIBRARY_PATH:/opt/pytorch/lib
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/pytorch/lib
+export LIBRARY_PATH=$LIBRARY_PATH:/opt/libtorch/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/libtorch/lib
 ```
 
 macOS
 
 ```
-export LIBRARY_PATH=$LIBRARY_PATH:/opt/pytorch/lib
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/opt/pytorch/lib
+export LIBRARY_PATH=$LIBRARY_PATH:/opt/libtorch/lib
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/opt/libtorch/lib
 ```
-
-You can test the installed TensorFlow C library using an [examle C program](https://www.pytorch.org/install/lang_c#build).
-
-To build the TensorFlow C library from source, refer to [TensorFlow in Go](https://github.com/pytorch/pytorch/tree/master/pytorch/go#building-the-pytorch-c-library-from-source) .
 
 #### Go packages
 
@@ -199,124 +197,3 @@ Run the agent ithout GPU or libjpeg-turbo
 cd $GOPATH/src/github.com/rai-project/pytorch
 go run -tags="nogpu nolibjpeg" pytorch-agent/main.go -l -d -v
 ```
-
-## Notes on installing TensorFlow from source
-
-### Install Bazel
-
-{{% notice note %}}
-Currently there's issue using bazel 0.19.1 to build TensorFlow 1.12 with CUDA 10.0
-{{% /notice %}}
-
--   [Installing Bazel on Ubuntu](https://docs.bazel.build/versions/master/install-ubuntu.html)
-
--   [Installing Bazel on macOS](https://docs.bazel.build/versions/master/install-os-x.html#install-on-mac-os-x-homebrew)
-
-### Build
-
-Build TensorFlow 1.12 with the following scripts.
-
-```sh
-go get -d github.com/pytorch/pytorch/pytorch/go
-cd ${GOPATH}/src/github.com/pytorch/pytorch
-git fetch --all
-git checkout r1.12
-./configure
-```
-
-For linux with gpu, an example `.tf_configure.bazelrc` is
-
-```
-build --action_env PYTHON_BIN_PATH="/usr/bin/python"
-build --action_env PYTHON_LIB_PATH="/usr/lib/python3/dist-packages"
-build --python_path="/usr/bin/python"
-build:ignite --define with_ignite_support=true
-build --define with_xla_support=true
-build --action_env TF_NEED_OPENCL_SYCL="0"
-build --action_env TF_NEED_ROCM="0"
-build --action_env TF_NEED_CUDA="1"
-build --action_env CUDA_TOOLKIT_PATH="/usr/local/cuda"
-build --action_env TF_CUDA_VERSION="10.0"
-build --action_env CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
-build --action_env TF_CUDNN_VERSION="7"
-build --action_env TENSORRT_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
-build --action_env TF_TENSORRT_VERSION="5.0.0"
-build --action_env NCCL_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
-build --action_env NCCL_HDR_PATH="/usr/include"
-build --action_env TF_NCCL_VERSION="2"
-build --action_env TF_CUDA_COMPUTE_CAPABILITIES="3.5,7.0"
-build --action_env LD_LIBRARY_PATH="/usr/local/cuda/extras/CUPTI/lib64:/home/abduld/.gvm/pkgsets/go1.11/global/overlay/lib"
-build --action_env TF_CUDA_CLANG="0"
-build --action_env GCC_HOST_COMPILER_PATH="/usr/bin/gcc"
-build --config=cuda
-test --config=cuda
-build:opt --copt=-march=native
-build:opt --host_copt=-march=native
-build:opt --define with_default_optimizations=true
-build:v2 --define=tf_api_version=2
-```
-
-For macos without gpu, an example `.tf_configure.bazelrc` is
-
-```
-build --action_env PYTHON_BIN_PATH="/usr/local/opt/python/bin/python3.7"
-build --action_env PYTHON_LIB_PATH="/usr/local/Cellar/python/3.7.0/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages"
-build --python_path="/usr/local/opt/python/bin/python3.7"
-build:ignite --define with_ignite_support=true
-build --define with_xla_support=true
-build --action_env TF_NEED_OPENCL_SYCL="0"
-build --action_env TF_NEED_ROCM="0"
-build --action_env TF_NEED_CUDA="0"
-build --action_env TF_DOWNLOAD_CLANG="0"
-build:opt --copt=-march=native
-build:opt --host_copt=-march=native
-build:opt --define with_default_optimizations=true
-build:v2 --define=tf_api_version=2
-```
-
-Then run
-
-```bash
-bazel build -c opt //pytorch:libtensorflow.so
-cp ${GOPATH}/src/github.com/pytorch/pytorch/bazel-bin/pytorch/libtensorflow.so /opt/pytorch/lib
-```
-
-Need to put the directory that contains `libtensorflow_framework.so` and `libtensorflow.so` into `$PATH`.
-
-### PowerPC
-
-For TensorFlow compilation, here are the recommended pytorch-configure settings:
-
-```
-export CC_OPT_FLAGS="-mcpu=power8 -mtune=power8"
-export GCC_HOST_COMPILER_PATH=/usr/bin/gcc
-
-ANACONDA_HOME=$(conda info --json | python -c "import sys, json; print json.load(sys.stdin)['default_prefix']")
-export PYTHON_BIN_PATH=$ANACONDA_HOME/bin/python
-export PYTHON_LIB_PATH=$ANACONDA_HOME/lib/python2.7/site-packages
-
-export USE_DEFAULT_PYTHON_LIB_PATH=0
-export TF_NEED_CUDA=1
-export TF_CUDA_VERSION=9.0
-export CUDA_TOOLKIT_PATH=/usr/local/cuda-9.0
-export TF_CUDA_COMPUTE_CAPABILITIES=3.5,3.7,5.2,6.0,7.0
-export CUDNN_INSTALL_PATH=/usr/local/cuda-9.0
-export TF_CUDNN_VERSION=7
-export TF_NEED_GCP=1
-export TF_NEED_OPENCL=0
-export TF_NEED_HDFS=1
-export TF_NEED_JEMALLOC=1
-export TF_ENABLE_XLA=1
-export TF_CUDA_CLANG=0
-export TF_NEED_MKL=0
-export TF_NEED_MPI=0
-export TF_NEED_VERBS=0
-export TF_NEED_GDR=0
-export TF_NEED_S3=0
-```
-
-### Issues
-
--   Install pytorch 1.12.0 with CUDA 10.0
-
-Build from source -> build the pip package -> GPU support -> bazel build -> ERROR: Config value cuda is not defined in any .rc file https://github.com/pytorch/pytorch/issues/23401
