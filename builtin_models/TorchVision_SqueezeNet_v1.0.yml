@@ -1,4 +1,4 @@
-name: TorchVision-SqueezeNet1.0 # name of your model
+name: TorchVision_SqueezeNet_v1.0 # name of your model
 framework:
     name: PyTorch # framework for the model
     version: 1.0 # framework version contraint
@@ -26,8 +26,8 @@ inputs:
       # description of the first input
       description: the input image
       parameters: # type parameters
-          dimensions: [3, 227, 227]
-          mean: [123, 117, 104] #TODO
+          dimensions: [3, 224, 224]
+          mean: [0.485, 0.456, 0.406]
 output:
     # the type of the output
     type: feature
@@ -43,7 +43,7 @@ model: # specifies model graph and weights resources
         false # if set, then the base_url is a url to an archive
         # the graph_path and weights_path then denote the
         # file names of the graph and weights within the archive
-    graph_checksum: 4876857f5d48c137a76ab2512cb8652c
+    graph_checksum: 511aa759ff6dc3b3c1cc7bd1ee100e6a
 attributes: # extra network attributes
     kind: CNN # the kind of neural network (CNN, RNN, ...)
     training_dataset: ImageNet # dataset used to for training

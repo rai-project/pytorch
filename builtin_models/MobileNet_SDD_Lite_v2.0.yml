@@ -1,8 +1,8 @@
-name: TorchVision-VGG16-BN # name of your model
+name: MobileNet_SDD_Lite_v2.0 # name of your model
 framework:
     name: PyTorch # framework for the model
     version: 1.0 # framework version contraint
-version: 1.0 # version information in semantic version format
+version: 2.0 # version information in semantic version format
 container: # containers used to perform model prediction
     # multiple platforms can be specified
     amd64:
@@ -12,11 +12,12 @@ container: # containers used to perform model prediction
         cpu: raiproject/carml-pytorch:ppc64le-gpu
         gpu: raiproject/carml-pytorch:ppc64le-gpu
 description: >
-    This model is a replication of the model described in the VGG publication.
-    All pre-trained models expect input images normalized in the same way, i.e. mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are expected to be atleast 224. The images have to be loaded in to a range of [0, 1] and then normalized using mean = [0.485, 0.456, 0.406] and std = [0.229, 0.224, 0.225]
+    This model is a replication of the model described in the MobileNet publication. All pre-trained models expect input images normalized in the same way, i.e. mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are expected to be atleast 224. The images have to be loaded in to a range of [0, 1] and then normalized using mean = [0.485, 0.456, 0.406] and std = [0.229, 0.224, 0.225] #TODO
 references: # references to papers / websites / etc.. describing the model
-    - https://pytorch-zh.readthedocs.io/en/latest/torchvision/models.html
-    - https://arxiv.org/pdf/1409.1556.pdf
+    - https://github.com/qfgaohao/pytorch-ssd/blob/master/vision/nn/mobilenet.py
+    - https://github.com/qfgaohao/pytorch-ssd/blob/master/vision/ssd/mobilenet_v2_ssd_lite.py
+    - https://storage.googleapis.com/models-hao/mb2-ssd-lite-mp-0_686.pth
+    - https://arxiv.org/pdf/1704.04861.pdf
 # license of the model
 license: unrestricted
 # inputs to the model
@@ -26,24 +27,26 @@ inputs:
       # description of the first input
       description: the input image
       parameters: # type parameters
-          dimensions: [3, 227, 227]
-          mean: [123, 117, 104] #TODO
+          element_type: float32
+          dimensions: [3, 224, 224]
+          mean: [0.486, 0.456, 0.406] #TODO
 output:
     # the type of the output
-    type: feature
+    type: classification
     # a description of the output parameter
     description: the output label
     parameters:
         # type parameters
+        element_type: float32
         features_url: http://s3.amazonaws.com/store.carml.org/synsets/imagenet/synset.txt
         features_checksum: 4d234b5833aca44928065a180db3016a
 model: # specifies model graph and weights resources
-    graph_path: https://s3.amazonaws.com/store.carml.org/models/pytorch/vgg16_bn.pt
+    graph_path: https://s3.amazonaws.com/store.carml.org/models/pytorch/mb2-ssd-lite.pt
     is_archive:
         false # if set, then the base_url is a url to an archive
         # the graph_path and weights_path then denote the
         # file names of the graph and weights within the archive
-    graph_checksum: 270817ebfaddbacae65850babb1fab6e
+    graph_checksum: 31107eb8bc8bdc40bd663f8bddce0ebb
 attributes: # extra network attributes
     kind: CNN # the kind of neural network (CNN, RNN, ...)
     training_dataset: ImageNet # dataset used to for training
