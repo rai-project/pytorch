@@ -41,9 +41,9 @@ func normalizeImageCHW(in *types.RGBImage, mean []float32, stddev []float32) ([]
 			offset := y*in.Stride + x*3
 			rgb := in.Pix[offset : offset+3]
 			r, g, b := rgb[0], rgb[1], rgb[2]
-			out[y*width+x] = ((float32(r >> 8) / 255.0)- mean[0]) / stddev[0]
-			out[width*height+y*width+x] = ((float32(g >> 8) / 255.0) - mean[1]) / stddev[1]
-			out[2*width*height+y*width+x] = ((float32(b >> 8) / 255.0)- mean[2]) / stddev[2]
+			out[y*width+x] = ((float32(r>>8) / 255.0) - mean[0]) / stddev[0]
+			out[width*height+y*width+x] = ((float32(g>>8) / 255.0) - mean[1]) / stddev[1]
+			out[2*width*height+y*width+x] = ((float32(b>>8) / 255.0) - mean[2]) / stddev[2]
 		}
 	}
 	return out, nil
