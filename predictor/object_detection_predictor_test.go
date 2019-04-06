@@ -49,16 +49,25 @@ func TestObjectDetection(t *testing.T) {
 		panic(err)
 	}
 
-	height := img.Bounds().Dy()
-	width := img.Bounds().Dx()
+	height := 300
+	width := 300
 	channels := 3
+
+	resized, err := image.Resize(img, image.Resized(height, width), image.ResizeAlgorithm(types.ResizeAlgorithmLinear))
+	if err != nil {
+		panic(err)
+	}
+
 	input := make([]*gotensor.Dense, batchSize)
-	imgBytes := img.(*types.RGBImage).Pix
+	imgFloats, err := normalizeImageHWC(resized.(*types.RGBImage), []float32{0.486, 0.456, 0.406}, []float32{0.229, 0.224, 0.225})
+	if err != nil {
+		panic(err)
+	}
 
 	for ii := 0; ii < batchSize; ii++ {
 		input[ii] = gotensor.New(
 			gotensor.WithShape(height, width, channels),
-			gotensor.WithBacking(imgBytes),
+			gotensor.WithBacking(imgFloats),
 		)
 	}
 
