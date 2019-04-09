@@ -1,6 +1,6 @@
 package predictor
 
-import (
+/*import (
 	"bufio"
 	"context"
 	"io"
@@ -331,4 +331,4 @@ func init() {
 			},
 		})
 	})
-}
+}*/

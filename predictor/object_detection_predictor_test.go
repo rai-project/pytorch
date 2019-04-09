@@ -1,6 +1,6 @@
 package predictor
 
-import (
+/*import (
 	"context"
 	"os"
 	"path/filepath"
@@ -88,4 +88,4 @@ func TestObjectDetection(t *testing.T) {
 
 	// TODO verify correctness of prediction
 	//assert.InDelta(t, float32(0.936415), pred[0][0].GetProbability(), 0.001)
-}
+}*/

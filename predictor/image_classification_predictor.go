@@ -243,10 +243,12 @@ func (p *ImageClassificationPredictor) Predict(ctx context.Context, data interfa
 	if data == nil {
 		return errors.New("input data nil")
 	}
+
 	gotensors, ok := data.([]*gotensor.Dense)
 	if !ok {
 		return errors.New("input data is not slice of dense tensors")
 	}
+
 	fst := gotensors[0]
 	dims := append([]int{len(gotensors)}, fst.Shape()...)
 	// debug
@@ -257,7 +259,15 @@ func (p *ImageClassificationPredictor) Predict(ctx context.Context, data interfa
 		input = append(input, t.Float32s()...)
 	}
 
-	err := p.predictor.Predict(ctx, input, dims)
+	// TODO make it compatible with binding
+	err := p.predictor.Predict(ctx, []gotensor.Tensor{
+		gotensor.New(
+			gotensor.Of(gotensor.Float32),
+			gotensor.WithBacking(input),
+			gotensor.WithShape(dims...),
+		),
+	})
+	//err := p.predictor.Predict(ctx, input, dims)
 	if err != nil {
 		return err
 	}
@@ -270,7 +280,15 @@ func (p *ImageClassificationPredictor) ReadPredictedFeatures(ctx context.Context
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "read_predicted_features")
 	defer span.Finish()
 
-	output, err := p.predictor.ReadPredictionOutput(ctx)
+	// TODO make it compatible with binding
+	outputs, err := p.predictor.ReadPredictionOutput(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// would be getting only one tensor as outputs since
+	// we are performing image classification
+	output := outputs[0].Data().([]float32)
+	//output, err := p.predictor.ReadPredictionOutput(ctx)
 	if err != nil {
 		return nil, err
 	}

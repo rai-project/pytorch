@@ -8,7 +8,7 @@ import (
 
 	"github.com/k0kubun/pp"
 	"github.com/rai-project/dlframework/framework/options"
-	"github.com/rai-project/image"
+	raiimage "github.com/rai-project/image"
 	"github.com/rai-project/image/types"
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	py "github.com/rai-project/pytorch"
@@ -16,20 +16,38 @@ import (
 	gotensor "gorgonia.org/tensor"
 )
 
-func normalizeImageHWC(in *types.RGBImage, mean []float32, stddev []float32) ([]float32, error) {
+func normalizeImageHWC(in0 image.Image, mean []float32, scale float32) ([]float32, error) {
 	height := in.Bounds().Dy()
 	width := in.Bounds().Dx()
 	out := make([]float32, 3*height*width)
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			offset := y*in.Stride + x*3
-			rgb := in.Pix[offset : offset+3]
-			r, g, b := rgb[0], rgb[1], rgb[2]
-			out[offset+0] = ((float32(r>>8) / 255.0) - mean[0]) / stddev[0]
-			out[offset+1] = ((float32(g>>8) / 255.0) - mean[1]) / stddev[1]
-			out[offset+2] = ((float32(b>>8) / 255.0) - mean[2]) / stddev[2]
+	switch in := in0.(type) {
+	case *types.RGBImage:
+		for y := 0; y < height; y++ {
+			for x := 0; x < width; x++ {
+				offset := y*in.Stride + x*3
+				rgb := in.Pix[offset : offset+3]
+				r, g, b := rgb[0], rgb[1], rgb[2]
+				out[offset+0] = ((float32(r>>8) / 255.0) - mean[0]) / scale
+				out[offset+1] = ((float32(g>>8) / 255.0) - mean[1]) / scale
+				out[offset+2] = ((float32(b>>8) / 255.0) - mean[2]) / scale
+			}
 		}
+	case *types.BGRImage:
+		for y := 0; y < height; y++ {
+			for x := 0; x < width; x++ {
+				offset := y*in.Stride + x*3
+				bgr := in.Pix[offset : offset+3]
+				b, g, r := bgr[0], bgr[1], bgr[2]
+				out[offset+0] = ((float32(b>>8) / 255.0) - mean[0]) / scale
+				out[offset+0] = ((float32(g>>8) / 255.0) - mean[1]) / scale
+				out[offset+0] = ((float32(r>>8) / 255.0) - mean[2]) / scale
+
+			}
+		}
+	default:
+		panic("unreachable")
 	}
+
 	return out, nil
 }
 
@@ -94,29 +112,54 @@ func TestImageClassification(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	img, err := image.Read(r)
-	if err != nil {
-		panic(err)
-	}
+	/*
+		img, err := image.Read(r)
+		if err != nil {
+			panic(err)
+		}*/
 
-	height := 224
+	// TODO read model parameters and preprocessing steps from .yml file
+	preprocessOpts, err := predictor.GetPreprocessOptions()
+	assert.NoError(t, err)
+	channels := preprocessOpts.Dims[0]
+	height := preprocessOpts.Dims[1]
+	width := preprocessOpts.Dims[2]
+	mode := preprocessOpts.ColorMode
+
+	/*height := 224
 	width := 224
-	channels := 3
+	channels := 3*/
 
-	resized, err := image.Resize(img, image.Resized(height, width), image.ResizeAlgorithm(types.ResizeAlgorithmLinear))
+	var imgOpts []raiimage.Option
+	if mode == types.RGBMode {
+		imgOpts = append(imgOpts, raiimage.Mode(types.RGBMode))
+	} else {
+		imgOpts = append(imgOpts, raiimage.Mode(types.BGRMode))
+	}
+
+	img, err := raiimage.Read(r, imgOpts...)
 	if err != nil {
 		panic(err)
 	}
+
+	imgOpts = append(imgOpts, raiimage.Resized(height, width))
+	imgOpts = append(imgOpts, raiimage.ResizeAlgorithm(types.ResizeAlgorithmLinear))
+	resized, err := raiimage.Resize(img, imgOpts...)
+
+	/*resized, err := image.Resize(img, image.Resized(height, width), image.ResizeAlgorithm(types.ResizeAlgorithmLinear))
+	if err != nil {
+		panic(err)
+	}*/
 
 	input := make([]*gotensor.Dense, batchSize)
-	imgFloats, err := normalizeImageHWC(resized.(*types.RGBImage), []float32{0.486, 0.456, 0.406}, []float32{0.229, 0.224, 0.225})
+	imgFloats, err := normalizeImageHWC(resized, preprocessOpts.MeanImage, preprocessOpts.Scale)
 	if err != nil {
 		panic(err)
 	}
 
 	for ii := 0; ii < batchSize; ii++ {
 		input[ii] = gotensor.New(
-			gotensor.WithShape(height, width, channels),
+			gotensor.WithShape(channels, height, width),
 			gotensor.WithBacking(imgFloats),
 		)
 	}
@@ -133,10 +176,7 @@ func TestImageClassification(t *testing.T) {
 		return
 	}
 
-	pp.Println("Prediction: ", pred[0][0].GetClassification().GetIndex())
-	pp.Println("Probability: ", pred[0][0].GetProbability())
+	//pp.Println("Prediction: ", pred[0][0].GetClassification().GetIndex())
+	//pp.Println("Probability: ", pred[0][0].GetProbability())*/
 
-	// TODO verify correctness of prediction
-	//assert.InDelta(t, float32(0.998212), pred[0][0].GetProbability(), 1.0)
-	//assert.Equal(t, int32(104), pred[0][0].GetClassification().GetIndex())
 }
