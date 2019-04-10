@@ -1,4 +1,4 @@
-name: TorchVision_VGG11_BN # name of your model
+name: TorchVision_VGG_11_BN # name of your model
 framework:
     name: PyTorch # framework for the model
     version: 1.0 # framework version contraint

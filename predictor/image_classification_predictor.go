@@ -259,7 +259,6 @@ func (p *ImageClassificationPredictor) Predict(ctx context.Context, data interfa
 		input = append(input, t.Float32s()...)
 	}
 
-	// TODO make it compatible with binding
 	err := p.predictor.Predict(ctx, []gotensor.Tensor{
 		gotensor.New(
 			gotensor.Of(gotensor.Float32),
@@ -267,7 +266,6 @@ func (p *ImageClassificationPredictor) Predict(ctx context.Context, data interfa
 			gotensor.WithShape(dims...),
 		),
 	})
-	//err := p.predictor.Predict(ctx, input, dims)
 	if err != nil {
 		return err
 	}
@@ -280,7 +278,6 @@ func (p *ImageClassificationPredictor) ReadPredictedFeatures(ctx context.Context
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "read_predicted_features")
 	defer span.Finish()
 
-	// TODO make it compatible with binding
 	outputs, err := p.predictor.ReadPredictionOutput(ctx)
 	if err != nil {
 		return nil, err
@@ -288,7 +285,6 @@ func (p *ImageClassificationPredictor) ReadPredictedFeatures(ctx context.Context
 	// would be getting only one tensor as outputs since
 	// we are performing image classification
 	output := outputs[0].Data().([]float32)
-	//output, err := p.predictor.ReadPredictionOutput(ctx)
 	if err != nil {
 		return nil, err
 	}
