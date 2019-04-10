@@ -25,8 +25,12 @@ inputs:
       description: the input image
       parameters: # type parameters
           element_type: float32
+          input_layer: 0
+          layout: HWC
+          color_mode: RGB
           dimensions: [3, 331, 331]
-          mean: [0.5, 0.5, 0.5]
+          mean: [127.5, 127.5, 127.5]
+          scale: 127.5 # [127.5, 127.5, 127.5]
 output:
     # the type of the output
     type: classification
@@ -35,6 +39,7 @@ output:
     parameters:
         # type parameters
         element_type: float32
+        probabilities_layer: 0
         features_url: http://s3.amazonaws.com/store.carml.org/synsets/imagenet/synset.txt
         features_checksum: 4d234b5833aca44928065a180db3016a
 model: # specifies model graph and weights resources
