@@ -196,7 +196,7 @@ func (p *ImageClassificationPredictor) loadPredictor(ctx context.Context) error 
 		olog.String("event", "creating predictor"),
 	)
 
-	opts, err := p.GetPredictionOptions(ctx)
+	opts, err := p.GetPredictionOptions()
 	if err != nil {
 		return err
 	}
@@ -285,12 +285,12 @@ func (p *ImageClassificationPredictor) ReadPredictedFeatures(ctx context.Context
 	}
 	// would be getting only one tensor as outputs since
 	// we are performing image classification
-	output := outputs[0].Data().([]float32)
-	if err != nil {
-		return nil, err
-	}
+	//output := outputs[0].Data().([]float32)
+	//if err != nil {
+	//	return nil, err
+	//}
 
-	return p.CreateClassificationFeaturesFrom1D(ctx, output, p.labels)
+	return p.CreateClassificationFeatures(ctx, outputs[0], p.labels)
 }
 
 // Reset ...

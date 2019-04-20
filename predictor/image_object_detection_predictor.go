@@ -204,7 +204,7 @@ func (p *ObjectDetectionPredictor) loadPredictor(ctx context.Context) error {
 		olog.String("event", "creating predictor"),
 	)
 
-	opts, err := p.GetPredictionOptions(ctx)
+	opts, err := p.GetPredictionOptions()
 	if err != nil {
 		return err
 	}
@@ -311,10 +311,10 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 	defer span.Finish()
 
 	// TODO
-	//outputs, err := p.predictor.ReadPredictionOutput(ctx)
-	//if err != nil {
-	//	return nil, err
-	//}
+	outputs, err := p.predictor.ReadPredictionOutput(ctx)
+	if err != nil {
+		return nil, err
+	}
 	// would be getting two tensors as outputs since
 	// we are performing object detection
 	// scores = outputs[0], dimensions of boxes = outputs[1]
@@ -323,10 +323,10 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 	//classes := p.classes.([][]float32)
 
 	// Dummy declarations
-	boxes := p.boxes.([][][]float32)
-	probabilities := p.probabilities.([][]float32)
+	//boxes := p.boxes.([][][]float32)
+	//probabilities := p.probabilities.([][]float32)
 	classes := p.classes.([][]float32)
-	return p.CreateBoundingBoxFeatures(ctx, probabilities, classes, boxes, p.labels)
+	return p.CreateBoundingBoxFeatures(ctx, outputs[0], classes, outputs[1], p.labels)
 }
 
 // Reset ...

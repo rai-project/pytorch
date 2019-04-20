@@ -21,11 +21,11 @@ The agent requires PyTorch C++ library (Libtorch).
 
 ## Libtorch Installation
 
-### Pre-built Binaries
+### Pre-built binaries
 
 Download the relevant `Libtorch` pre-built binary available on [Pytorch website](https://pytorch.org). Note that we provide the option of profiling through pytorch's in-built autograd profiler. Incidentally, Pytorch C++ frontend does not have access to the autograd profiler as per release `1.0.1`. Kindly download nightly build post March 24th 2019 to enable the profiling. Without profiling, our codebase should be compatible with prior versions.
 
-### Build From Source
+### Build from source
 
 Refer to `$GOPATH/src/github.com/rai-project/go-pytorch/dockerfiles` to know how to build `Libtorch` from source. Note that one can also use `build_libtorch.py` script provided as part of the Pytorch repository to do the same.
 
@@ -45,6 +45,24 @@ macOS
 ```
 export LIBRARY_PATH=$LIBRARY_PATH:/opt/libtorch/lib
 export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/opt/libtorch/lib
+```
+
+### Build from source using python pip
+
+```
+pip3 install torch torchvision
+```
+
+or
+
+```
+conda install pytorch-nightly -c pytorch
+```
+
+then build using
+
+```
+go build -tags=nogpu -tags=python
 ```
 
 #### Go packages

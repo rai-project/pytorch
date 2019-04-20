@@ -114,7 +114,7 @@ func TestImageClassification(t *testing.T) {
 		panic(err)
 	}
 
-	preprocessOpts, err := predictor.GetPreprocessOptions(ctx)
+	preprocessOpts, err := predictor.GetPreprocessOptions()
 	assert.NoError(t, err)
 	channels := preprocessOpts.Dims[0]
 	height := preprocessOpts.Dims[1]
