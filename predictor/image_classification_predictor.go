@@ -170,6 +170,7 @@ func (p *ImageClassificationPredictor) download(ctx context.Context) error {
 
 	return nil
 }
+
 func (p *ImageClassificationPredictor) loadPredictor(ctx context.Context) error {
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "load_predictor")
 	defer span.Finish()

@@ -1,6 +1,6 @@
 package predictor
 
-/*import (
+import (
 	"bufio"
 	"context"
 	"io"
@@ -24,6 +24,7 @@ package predictor
 	gotensor "gorgonia.org/tensor"
 )
 
+// ObjectDetectionPredictor ...
 type ObjectDetectionPredictor struct {
 	common.ImagePredictor
 	predictor          *gopytorch.Predictor
@@ -54,7 +55,7 @@ func NewObjectDetectionPredictor(model dlframework.ModelManifest, opts ...option
 
 	predictor := new(ObjectDetectionPredictor)
 
-	return predictor.Load(context.Background(), model, opts...)
+	return predictor.Load(ctx, model, opts...)
 }
 
 // Download ...
@@ -275,20 +276,28 @@ func (p *ObjectDetectionPredictor) Predict(ctx context.Context, data interface{}
 	if data == nil {
 		return errors.New("input data nil")
 	}
+
 	gotensors, ok := data.([]*gotensor.Dense)
 	if !ok {
 		return errors.New("input data is not slice of dense tensors")
 	}
+
 	fst := gotensors[0]
 	dims := append([]int{len(gotensors)}, fst.Shape()...)
-	// debug
-	pp.Println(dims)
+
+	// TODO support data types other than float32
 	var input []float32
 	for _, t := range gotensors {
 		input = append(input, t.Float32s()...)
 	}
 
-	err := p.predictor.Predict(ctx, input, dims)
+	err := p.predictor.Predict(ctx, []gotensor.Tensor{
+		gotensor.New(
+			gotensor.Of(gotensor.Float32),
+			gotensor.WithBacking(input),
+			gotensor.WithShape(dims...),
+		),
+	})
 	if err != nil {
 		return err
 	}
@@ -301,22 +310,39 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "read_predicted_features")
 	defer span.Finish()
 
+	// TODO
+	//outputs, err := p.predictor.ReadPredictionOutput(ctx)
+	//if err != nil {
+	//	return nil, err
+	//}
+	// would be getting two tensors as outputs since
+	// we are performing object detection
+	// scores = outputs[0], dimensions of boxes = outputs[1]
+	//boxes := outputs[1].Data().([]float32)
+	//probabilities := outputs[0].Data().([]float32)
+	//classes := p.classes.([][]float32)
+
+	// Dummy declarations
 	boxes := p.boxes.([][][]float32)
 	probabilities := p.probabilities.([][]float32)
 	classes := p.classes.([][]float32)
-
 	return p.CreateBoundingBoxFeatures(ctx, probabilities, classes, boxes, p.labels)
 }
 
+// Reset ...
 func (p *ObjectDetectionPredictor) Reset(ctx context.Context) error {
 	return nil
 }
 
+// Close ...
 func (p *ObjectDetectionPredictor) Close() error {
+	if p.predictor != nil {
+		p.predictor.Close()
+	}
 	return nil
 }
 
-func (p ObjectDetectionPredictor) Modality() (dlframework.Modality, error) {
+func (p *ObjectDetectionPredictor) Modality() (dlframework.Modality, error) {
 	return dlframework.ImageObjectDetectionModality, nil
 }
 
@@ -331,4 +357,4 @@ func init() {
 			},
 		})
 	})
-}*/
+}

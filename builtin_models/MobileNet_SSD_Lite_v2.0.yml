@@ -12,7 +12,7 @@ container: # containers used to perform model prediction
         cpu: raiproject/carml-pytorch:ppc64le-gpu
         gpu: raiproject/carml-pytorch:ppc64le-gpu
 description: >
-    This model is a replication of the model described in the MobileNet publication. All pre-trained models expect input images normalized in the same way, i.e. mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are expected to be atleast 224. The images have to be loaded in to a range of [0, 1] and then normalized using mean = [0.485, 0.456, 0.406] and std = [0.229, 0.224, 0.225] #TODO
+    This model is a replication of the model described in the MobileNet publication. The model expects mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are expected to be atleast 300. The images have to be loaded in to a range of [0, 1] and then normalized using mean = [0.485, 0.456, 0.406] and std = [0.229, 0.224, 0.225]
 references: # references to papers / websites / etc.. describing the model
     - https://github.com/qfgaohao/pytorch-ssd/blob/master/vision/nn/mobilenet.py
     - https://github.com/qfgaohao/pytorch-ssd/blob/master/vision/ssd/mobilenet_v2_ssd_lite.py
@@ -31,7 +31,7 @@ inputs:
           input_layer: 0
           layout: HWC
           color_mode: RGB
-          dimensions: [3, 224, 224]
+          dimensions: [3, 300, 300]
           mean: [123.93, 116.28, 103.53]
           scale: 58.395 # [0.229, 0.224, 0.225]
 output:

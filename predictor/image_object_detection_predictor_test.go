@@ -1,6 +1,6 @@
 package predictor
 
-/*import (
+import (
 	"context"
 	"os"
 	"path/filepath"
@@ -8,7 +8,7 @@ package predictor
 
 	"github.com/k0kubun/pp"
 	"github.com/rai-project/dlframework/framework/options"
-	"github.com/rai-project/image"
+	raiimage "github.com/rai-project/image"
 	"github.com/rai-project/image/types"
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	py "github.com/rai-project/pytorch"
@@ -44,29 +44,39 @@ func TestObjectDetection(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	img, err := image.Read(r)
+
+	preprocessOpts, err := predictor.GetPreprocessOptions(ctx)
+	assert.NoError(t, err)
+	channels := preprocessOpts.Dims[0]
+	height := preprocessOpts.Dims[1]
+	width := preprocessOpts.Dims[2]
+	mode := preprocessOpts.ColorMode
+
+	var imgOpts []raiimage.Option
+	if mode == types.RGBMode {
+		imgOpts = append(imgOpts, raiimage.Mode(types.RGBMode))
+	} else {
+		imgOpts = append(imgOpts, raiimage.Mode(types.BGRMode))
+	}
+
+	img, err := raiimage.Read(r, imgOpts...)
 	if err != nil {
 		panic(err)
 	}
 
-	height := 300
-	width := 300
-	channels := 3
-
-	resized, err := image.Resize(img, image.Resized(height, width), image.ResizeAlgorithm(types.ResizeAlgorithmLinear))
-	if err != nil {
-		panic(err)
-	}
+	imgOpts = append(imgOpts, raiimage.Resized(height, width))
+	imgOpts = append(imgOpts, raiimage.ResizeAlgorithm(types.ResizeAlgorithmLinear))
+	resized, err := raiimage.Resize(img, imgOpts...)
 
 	input := make([]*gotensor.Dense, batchSize)
-	imgFloats, err := normalizeImageHWC(resized.(*types.RGBImage), []float32{0.486, 0.456, 0.406}, []float32{0.229, 0.224, 0.225})
+	imgFloats, err := normalizeImageHWC(resized, preprocessOpts.MeanImage, preprocessOpts.Scale)
 	if err != nil {
 		panic(err)
 	}
 
 	for ii := 0; ii < batchSize; ii++ {
 		input[ii] = gotensor.New(
-			gotensor.WithShape(height, width, channels),
+			gotensor.WithShape(channels, height, width),
 			gotensor.WithBacking(imgFloats),
 		)
 	}
@@ -88,4 +98,4 @@ func TestObjectDetection(t *testing.T) {
 
 	// TODO verify correctness of prediction
 	//assert.InDelta(t, float32(0.936415), pred[0][0].GetProbability(), 0.001)
-}*/
+}
