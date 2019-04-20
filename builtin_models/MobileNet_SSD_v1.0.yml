@@ -43,8 +43,8 @@ output:
         # type parameters
         element_type: float32
         probabilities_layer: 0
-        features_url: http://s3.amazonaws.com/store.carml.org/synsets/imagenet/synset.txt
-        features_checksum: 4d234b5833aca44928065a180db3016a
+        features_url: https://s3.amazonaws.com/store.carml.org/models/tensorflow/models/deeplabv3_mnv2_pascal_train_aug_2018_01_29/pascal-voc-classes.txt
+        features_checksum: 9ce439bcfb44c304e49a0fe1ae398f69
 model: # specifies model graph and weights resources
     graph_path: https://s3.amazonaws.com/store.carml.org/models/pytorch/mb1-ssd.pt
     is_archive:

@@ -310,22 +310,40 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "read_predicted_features")
 	defer span.Finish()
 
-	// TODO
 	outputs, err := p.predictor.ReadPredictionOutput(ctx)
 	if err != nil {
 		return nil, err
 	}
+	// debug
 	// would be getting two tensors as outputs since
 	// we are performing object detection
 	// scores = outputs[0], dimensions of boxes = outputs[1]
-	//boxes := outputs[1].Data().([]float32)
-	//probabilities := outputs[0].Data().([]float32)
-	//classes := p.classes.([][]float32)
+	// create class tensor with argmax of the prob scores
+	pp.Println("Number of classes: ", len(p.labels))
+	scores := outputs[0].Data().([]float32)
+	boxes := outputs[1].Data().([]float32)
+	var input_classes []int32
+	for curObj := 0; curObj < len(boxes)/4; curObj++ {
+		max_score := float32(0.0)
+		var max_index int
+		max_index = 0
+		for i := 1; i < len(p.labels); i++ {
+			sc := scores[curObj*len(p.labels)+i]
+			if sc > max_score {
+				max_index = i
+			}
+		}
+		input_classes = append(input_classes, int32(max_index))
+	}
+	dims := []int{len(boxes) / 4, 1}
+	classes := []gotensor.Tensor{
+		gotensor.New(
+			gotensor.Of(gotensor.Int32),
+			gotensor.WithBacking(input_classes),
+			gotensor.WithShape(dims...),
+		),
+	}
 
-	// Dummy declarations
-	//boxes := p.boxes.([][][]float32)
-	//probabilities := p.probabilities.([][]float32)
-	classes := p.classes.([][]float32)
 	return p.CreateBoundingBoxFeatures(ctx, outputs[0], classes, outputs[1], p.labels)
 }
 
