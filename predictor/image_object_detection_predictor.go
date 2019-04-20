@@ -336,13 +336,12 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 		input_classes = append(input_classes, int32(max_index))
 	}
 	dims := []int{len(boxes) / 4, 1}
-	classes := []gotensor.Tensor{
-		gotensor.New(
-			gotensor.Of(gotensor.Int32),
-			gotensor.WithBacking(input_classes),
-			gotensor.WithShape(dims...),
-		),
-	}
+	classes := gotensor.New(
+		gotensor.Of(gotensor.Int32),
+		gotensor.WithBacking(input_classes),
+		gotensor.WithShape(dims...),
+	)
+	//pp.Println("Shape of probability tensor: ", outputs[0].Shape())
 
 	return p.CreateBoundingBoxFeatures(ctx, outputs[0], classes, outputs[1], p.labels)
 }
