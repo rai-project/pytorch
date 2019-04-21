@@ -341,8 +341,20 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 		gotensor.WithBacking(input_classes),
 		gotensor.WithShape(dims...),
 	)
-	//pp.Println("Shape of probability tensor: ", outputs[0].Shape())
-
+	// debug
+	pp.Println("Shape of probability tensor: ", outputs[0].Shape())
+	temp := outputs[0].(gotensor.Tensor)
+	pp.Println("Before temp.At...")
+	// ERROR: CreateBoundingBoxFeatures() is accessing each tensor
+	// as .At(x,y) i.e. with two dimensions while the tensors coming out
+	// of our bindings have three dimensions i.e. need .At(x,y,z)
+	// TODO how do we correct this...?
+	temp_read, err := temp.At(0, 1, 1)
+	if err != nil {
+		return nil, err
+	}
+	pp.Println("After temp.At...")
+	pp.Println("An element of probability tensor: ", temp_read)
 	return p.CreateBoundingBoxFeatures(ctx, outputs[0], classes, outputs[1], p.labels)
 }
 
