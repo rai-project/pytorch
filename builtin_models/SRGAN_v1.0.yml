@@ -11,8 +11,8 @@ container: # containers used to perform model prediction
     ppc64le:
         cpu: raiproject/carml-pytorch:ppc64le-gpu
         gpu: raiproject/carml-pytorch:ppc64le-gpu
-description: > #TODO
-    This model is a replication of the model described in the SRGAN publication. This model expects mini-batches of 3-channel <pixel layout> images of shape (3 x H x W), where H and W are expected to be atleast <input layer height/width>. The images have to be loaded in to a range of <range of input pixel values> and then normalized using <mean> and <std>
+description: >
+    This model is a replication of the model described in the SRGAN publication.
 references: # references to papers / websites / etc.. describing the model #TODO
     - https://github.com/qfgaohao/pytorch-ssd/blob/master/vision/nn/mobilenet.py
     - https://github.com/qfgaohao/pytorch-ssd/blob/master/vision/ssd/mobilenetv1_ssd.py
@@ -29,22 +29,20 @@ inputs:
       parameters: # type parameters
           element_type: float32
           input_layer: 0
-          layout: HWC #TODO
-          color_mode: RGB #TODO
-          dimensions: [3, 300, 300] #TODO
-          mean: [123.93, 116.28, 103.53] #TODO
-          scale: 58.395 # [0.229, 0.224, 0.225] #TODO
+          layout: HWC
+          color_mode: RGB
+          dimensions: [1, 3, 224, 224]
+          mean: [127.5, 127.5, 127.5]
+          scale: 127.5
 output:
     # the type of the output
-    type: classification
+    type: image
     # a description of the output parameter
-    description: the output label
+    description: the output image
     parameters:
         # type parameters
         element_type: float32
-        probabilities_layer: 0
-        features_url: https://s3.amazonaws.com/store.carml.org/models/tensorflow/models/deeplabv3_mnv2_pascal_train_aug_2018_01_29/pascal-voc-classes.txt #TODO
-        features_checksum: 9ce439bcfb44c304e49a0fe1ae398f69 #TODO
+        dimensions: [1, 3, 1356, 2040] 
 model: # specifies model graph and weights resources
     graph_path: https://s3.amazonaws.com/store.carml.org/models/pytorch/srgan_netG_epoch_4_100.pt
     is_archive:
