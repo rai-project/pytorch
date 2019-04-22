@@ -12,7 +12,7 @@ import (
 	"github.com/rai-project/dlframework"
 
 	"github.com/rai-project/dlframework/framework/options"
-	"github.com/rai-project/image"
+	raiimage "github.com/rai-project/image"
 	"github.com/rai-project/image/types"
 	nvidiasmi "github.com/rai-project/nvidia-smi"
 	py "github.com/rai-project/pytorch"

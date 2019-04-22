@@ -153,20 +153,6 @@ func (p *ImageEnhancementPredictor) download(ctx context.Context) error {
 		}
 	}
 
-	span.LogFields(
-		olog.String("event", "download features"),
-	)
-	checksum := p.GetFeaturesChecksum()
-	if checksum != "" {
-		if _, err := downloadmanager.DownloadFile(p.GetFeaturesUrl(), p.GetFeaturesPath(), downloadmanager.MD5Sum(checksum)); err != nil {
-			return err
-		}
-	} else {
-		if _, err := downloadmanager.DownloadFile(p.GetFeaturesUrl(), p.GetFeaturesPath()); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
