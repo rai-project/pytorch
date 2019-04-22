@@ -314,48 +314,39 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 	if err != nil {
 		return nil, err
 	}
-	// debug
-	// would be getting two tensors as outputs since
-	// we are performing object detection
-	// scores = outputs[0], dimensions of boxes = outputs[1]
-	// create class tensor with argmax of the prob scores
-	pp.Println("Number of classes: ", len(p.labels))
+	// TODO iterate over batchsize (assumed 1 for now)
+	// make armax, max code cleaner
 	scores := outputs[0].Data().([]float32)
 	boxes := outputs[1].Data().([]float32)
 	var input_classes []int32
+	var input_scores []float32
 	for curObj := 0; curObj < len(boxes)/4; curObj++ {
-		max_score := float32(0.0)
+		max_score := scores[curObj*len(p.labels)]
 		var max_index int
 		max_index = 0
 		for i := 1; i < len(p.labels); i++ {
 			sc := scores[curObj*len(p.labels)+i]
 			if sc > max_score {
+				max_score = sc
 				max_index = i
 			}
 		}
+		input_scores = append(input_scores, float32(max_score))
 		input_classes = append(input_classes, int32(max_index))
 	}
-	dims := []int{len(boxes) / 4, 1}
-	classes := gotensor.New(
+	dims := []int{1, len(boxes) / 4}
+	tensor_classes := gotensor.New(
 		gotensor.Of(gotensor.Int32),
 		gotensor.WithBacking(input_classes),
 		gotensor.WithShape(dims...),
 	)
-	// debug
-	pp.Println("Shape of probability tensor: ", outputs[0].Shape())
-	temp := outputs[0].(gotensor.Tensor)
-	pp.Println("Before temp.At...")
-	// ERROR: CreateBoundingBoxFeatures() is accessing each tensor
-	// as .At(x,y) i.e. with two dimensions while the tensors coming out
-	// of our bindings have three dimensions i.e. need .At(x,y,z)
-	// TODO how do we correct this...?
-	temp_read, err := temp.At(0, 1, 1)
-	if err != nil {
-		return nil, err
-	}
-	pp.Println("After temp.At...")
-	pp.Println("An element of probability tensor: ", temp_read)
-	return p.CreateBoundingBoxFeatures(ctx, outputs[0], classes, outputs[1], p.labels)
+	tensor_scores := gotensor.New(
+		gotensor.Of(gotensor.Float32),
+		gotensor.WithBacking(input_scores),
+		gotensor.WithShape(dims...),
+	)
+
+	return p.CreateBoundingBoxFeatures(ctx, tensor_scores, tensor_classes, outputs[1], p.labels)
 }
 
 // Reset ...

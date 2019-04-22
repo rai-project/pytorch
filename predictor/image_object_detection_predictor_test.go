@@ -93,10 +93,6 @@ func TestObjectDetection(t *testing.T) {
 		return
 	}
 
-	pp.Println("Prediction: ", pred)
-	//pp.Println("Prediction: ", pred[0][0].GetClassification().GetIndex())
-	//pp.Println("Probability: ", pred[0][0].GetProbability())
+	pp.Println("Prediction: ", pred[0][0].GetProbability())
 
-	// TODO verify correctness of prediction
-	//assert.InDelta(t, float32(0.936415), pred[0][0].GetProbability(), 0.001)
 }
