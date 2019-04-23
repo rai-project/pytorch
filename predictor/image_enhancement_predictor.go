@@ -31,7 +31,9 @@ type ImageEnhancementPredictor struct {
 
 // New ...
 func NewImageEnhancementPredictor(model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
-	ctx := context.Background()
+	opts := options.New(os...)
+	ctx := opts.Context()
+
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "new_predictor")
 	defer span.Finish()
 
@@ -46,7 +48,7 @@ func NewImageEnhancementPredictor(model dlframework.ModelManifest, opts ...optio
 
 	predictor := new(ImageEnhancementPredictor)
 
-	return predictor.Load(context.Background(), model, opts...)
+	return predictor.Load(ctx, model, opts...)
 }
 
 // Download ...

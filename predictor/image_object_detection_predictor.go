@@ -40,7 +40,9 @@ type ObjectDetectionPredictor struct {
 
 // New ...
 func NewObjectDetectionPredictor(model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
-	ctx := context.Background()
+	opts := options.New(os...)
+	ctx := opts.Context()
+
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "new_predictor")
 	defer span.Finish()
 

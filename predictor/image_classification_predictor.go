@@ -31,8 +31,10 @@ type ImageClassificationPredictor struct {
 }
 
 // New ...
-func NewImageClassificationPredictor(model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
-	ctx := context.Background()
+func NewImageClassificationPredictor(model dlframework.ModelManifest, os ...options.Option) (common.Predictor, error) {
+	opts := options.New(os...)
+	ctx := opts.Context()
+
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "new_predictor")
 	defer span.Finish()
 
