@@ -1,0 +1,78 @@
+jobs:
+  - job: CPU
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    steps:
+      - bash: |
+          docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
+          cd dockerfiles
+          make docker_pull_cpu
+          make docker_build_cpu
+          ./push.sh docker_push_cpu
+  - job: GPU
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    steps:
+      - bash: |
+          docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
+          cd dockerfiles
+          make docker_pull_gpu
+          make docker_build_gpu
+          ./push.sh docker_push_gpu
+  - job: GPU_NGC
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    steps:
+      - bash: |
+          docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
+          cd dockerfiles
+          make docker_pull_gpu_ngc
+          make docker_build_gpu_ngc
+          ./push.sh docker_push_gpu_ngc
+  - job: CPU_Agent
+#    dependsOn:
+#      - CPU
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    steps:
+      - bash: |
+          docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
+          cd pytorch-agent/dockerfiles
+          make docker_pull_cpu
+          make docker_build_cpu
+          ./push.sh docker_push_cpu
+  - job: GPU_Agent
+#    dependsOn:
+#      - GPU
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    steps:
+      - bash: |
+          docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
+          cd pytorch-agent/dockerfiles
+          make docker_pull_gpu
+          make docker_build_gpu
+          ./push.sh docker_push_gpu
+  - job: GPU_NGC_Agent
+#    dependsOn:
+#      - GPU_NGC
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    timeoutInMinutes: 0
+    steps:
+      - bash: |
+          docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
+          cd pytorch-agent/dockerfiles
+          make docker_pull_gpu_ngc
+          make docker_build_gpu_ngc
+          ./push.sh docker_push_gpu_ngc
+  - job: Update_Microbadger
+    dependsOn:
+      - CPU
+      - GPU
+      - GPU_NGC
+  - job: Update_Microbadger_Agent
+    dependsOn:
+      - CPU_Agent
+      - GPU_Agent
+      - GPU_NGC_Agent

@@ -7,6 +7,8 @@ ARG BUILD_DATE
 ARG VCS_REF
 ARG VCS_URL
 ARG VERSION
+ARG ARCH
+ARG FRAMEWORK_VERSION
 LABEL org.mlmodelscope.pytorch.agent.build-date=$BUILD_DATE \
       org.mlmodelscope.pytorch.agent.name="pytorch agent" \
       org.mlmodelscope.pytorch.agent.description="" \
@@ -23,7 +25,8 @@ ENV PKG github.com/rai-project/pytorch
 WORKDIR $GOPATH/src/$PKG
 
 RUN git clone --depth=1 --branch=master https://${PKG}.git . && \
-    dep ensure -v && \
-    go build -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
+    dep ensure -v -vendor-only
+
+RUN go build -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
     go install && \
     rm -fr vendor
