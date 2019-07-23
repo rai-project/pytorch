@@ -1,0 +1,35 @@
+FROM carml/go-pytorch:amd64-cpu-latest
+
+# Build-time metadata as defined at http://label-schema.org
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VCS_URL
+ARG VERSION
+ARG ARCH
+ARG FRAMEWORK_VERSION
+LABEL org.pytorch.agent.build-date=$BUILD_DATE \
+      org.pytorch.agent.name="pytorch agent" \
+      org.pytorch.agent.description="" \
+      org.pytorch.agent.url="https://www.mlmodelscope.org/" \
+      org.pytorch.agent.vcs-ref=$VCS_REF \
+      org.pytorch.agent.vcs-url=$VCS_URL \
+      org.pytorch.agent.vendor="MLModelScope" \
+      org.pytorch.agent.version=$VERSION \
+      org.pytorch.agent.schema-version="1.0"
+
+
+# Get Go bindings
+ENV PKG github.com/rai-project/pytorch
+WORKDIR $GOPATH/src/$PKG
+
+RUN git clone --depth=1 --branch=master https://${PKG}.git . && \
+    dep ensure -v -vendor-only
+
+RUN go build -tags=nogpu -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}" && \
+    cd pytorch-agent && \
+    go install -tags=nogpu && \
+    cd .. && \
+    rm -fr vendor
+
+ENTRYPOINT ["pytorch-agent"]
+

@@ -24,14 +24,9 @@
 #   go-tests = true
 #   unused-packages = true
 
-
 [[constraint]]
   name = "github.com/elazarl/go-bindata-assetfs"
   version = "1.0.0"
-
-[[constraint]]
-  name = "github.com/k0kubun/pp"
-  version = "2.3.0"
 
 [[constraint]]
   name = "github.com/opentracing/opentracing-go"
@@ -54,10 +49,6 @@
   name = "github.com/rai-project/downloadmanager"
 
 [[constraint]]
-  name = "github.com/rai-project/go-pytorch"
-  version = "0.0.1"
-
-[[constraint]]
   branch = "master"
   name = "github.com/rai-project/image"
 
@@ -67,16 +58,32 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/rai-project/monitoring"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/rai-project/tracer"
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
   version = "1.2.0"
 
+[[override]]
+  name = "github.com/k0kubun/pp"
+  version = "3.0.1"
+
+[[override]]
+  name = "github.com/russross/blackfriday"
+  version = "=1.5.2"
+
+[[override]]
+  name = "github.com/mohae/joefriday"
+  revision = "b07e8091cfb9214db8446b5101cb69edcfaabd30"
+ 
+[[override]]
+  branch = "master"
+  name = "github.com/rai-project/go-pytorch"
+
+[[override]]
+  branch = "master"
+  name = "github.com/VividCortex/robustly"
+
 [prune]
   go-tests = true
-  unused-packages = true
+
