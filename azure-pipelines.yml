@@ -76,3 +76,5 @@ jobs:
       - CPU_Agent
       - GPU_Agent
       - GPU_NGC_Agent
+variables:
+- group: Docker Auth
