@@ -6,7 +6,6 @@ jobs:
       - bash: |
           docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
           cd dockerfiles
-          make docker_pull_cpu
           make docker_build_cpu
           ./push.sh docker_push_cpu
   - job: GPU
@@ -16,7 +15,6 @@ jobs:
       - bash: |
           docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
           cd dockerfiles
-          make docker_pull_gpu
           make docker_build_gpu
           ./push.sh docker_push_gpu
   - job: GPU_NGC
@@ -26,7 +24,6 @@ jobs:
       - bash: |
           docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
           cd dockerfiles
-          make docker_pull_gpu_ngc
           make docker_build_gpu_ngc
           ./push.sh docker_push_gpu_ngc
   - job: CPU_Agent
@@ -38,7 +35,6 @@ jobs:
       - bash: |
           docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
           cd pytorch-agent/dockerfiles
-          make docker_pull_cpu
           make docker_build_cpu
           ./push.sh docker_push_cpu
   - job: GPU_Agent
@@ -50,7 +46,6 @@ jobs:
       - bash: |
           docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
           cd pytorch-agent/dockerfiles
-          make docker_pull_gpu
           make docker_build_gpu
           ./push.sh docker_push_gpu
   - job: GPU_NGC_Agent
@@ -63,7 +58,6 @@ jobs:
       - bash: |
           docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
           cd pytorch-agent/dockerfiles
-          make docker_pull_gpu_ngc
           make docker_build_gpu_ngc
           ./push.sh docker_push_gpu_ngc
   - job: Update_Microbadger
