@@ -8,7 +8,7 @@ push: docker_push output ## Push Docker image
 release: docker_build docker_push
 
 # Image and binary can be overidden with env vars.
-DOCKER_IMAGE ?= carml/pytorch
+DOCKER_IMAGE ?= carml/pytorch-agent
 
 
 # Get System architecture
