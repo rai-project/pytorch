@@ -68,10 +68,6 @@
   branch = "master"
   name = "github.com/rai-project/go-pytorch"
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/rai-project/pytorch"
-
 [[override]]
   name = "github.com/k0kubun/pp"
   version = "3.0.1"

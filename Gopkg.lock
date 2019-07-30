@@ -825,8 +825,8 @@
     "utilities",
   ]
   pruneopts = "T"
-  revision = "bebc7374a79e1105d786ef3468b474e47d652511"
-  version = "v1.9.4"
+  revision = "ad529a448ba494a88058f9e5be0988713174ac86"
+  version = "v1.9.5"
 
 [[projects]]
   digest = "0:"
@@ -1538,7 +1538,7 @@
   name = "github.com/rai-project/go-echarts"
   packages = ["charts"]
   pruneopts = "T"
-  revision = "77c779f2421d8fc0df3bc083b129153768117a6f"
+  revision = "b17e08e070c7865136b1f5a9fa7b03b88031aae0"
 
 [[projects]]
   branch = "master"
@@ -1679,7 +1679,7 @@
   name = "github.com/rai-project/nvidia-smi"
   packages = ["."]
   pruneopts = "T"
-  revision = "5f6bbd4268777e33ec51313e4b6c0b89de084cbf"
+  revision = "864eb441c9ae3171601e2e9df942b9ca386612c0"
 
 [[projects]]
   branch = "master"
