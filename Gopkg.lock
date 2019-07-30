@@ -604,6 +604,22 @@
 
 [[projects]]
   digest = "0:"
+  name = "github.com/getlantern/deepcopy"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "b923171e8640f94369e21e324b1b0465cb82ec9f"
+  version = "v1"
+
+[[projects]]
+  branch = "master"
+  digest = "0:"
+  name = "github.com/glendc/go-external-ip"
+  packages = ["."]
+  pruneopts = "T"
+  revision = "139229dcdddd5ad18f5c4912fcb905a4079e2a36"
+
+[[projects]]
+  digest = "0:"
   name = "github.com/go-logfmt/logfmt"
   packages = ["."]
   pruneopts = "T"
@@ -1469,7 +1485,7 @@
     "steps",
   ]
   pruneopts = "T"
-  revision = "2653231c641a7543bb5a1127318c1e522e38fd72"
+  revision = "93e476893f9e9d186315a13803106a552030e05f"
 
 [[projects]]
   branch = "master"
@@ -1514,7 +1530,7 @@
     "writer",
   ]
   pruneopts = "T"
-  revision = "007d110a32f7cd65ce1294069e3580c52c32a0ce"
+  revision = "4a55b9cdb00f9fa9fcd00a9ff8424a42ad70edd0"
 
 [[projects]]
   branch = "master"
@@ -1538,7 +1554,7 @@
   name = "github.com/rai-project/go-pytorch"
   packages = ["."]
   pruneopts = "T"
-  revision = "56bc0d9faea8c61c6aa28915e2eab6834773ebaa"
+  revision = "c365c5577763f3d6c56fc4897771d1c9f2c67ef2"
 
 [[projects]]
   branch = "master"
@@ -1698,7 +1714,7 @@
     "predictor",
   ]
   pruneopts = "T"
-  revision = "b0be3e1982c07981513964ea59bed4c0824da25f"
+  revision = "ae4c09ae823cba861023dbd55a243554d4f1903e"
 
 [[projects]]
   branch = "master"
