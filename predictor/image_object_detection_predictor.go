@@ -320,7 +320,7 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 	// make armax, max code cleaner
 	scores := outputs[0].Data().([]float32)
 	boxes := outputs[1].Data().([]float32)
-	var input_classes []int32
+	var input_classes []float32
 	var input_scores []float32
 	for curObj := 0; curObj < len(boxes)/4; curObj++ {
 		max_score := scores[curObj*len(p.labels)]
@@ -334,11 +334,11 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 			}
 		}
 		input_scores = append(input_scores, float32(max_score))
-		input_classes = append(input_classes, int32(max_index))
+		input_classes = append(input_classes, float32(max_index))
 	}
 	dims := []int{1, len(boxes) / 4}
 	tensor_classes := gotensor.New(
-		gotensor.Of(gotensor.Int32),
+		gotensor.Of(gotensor.Float32),
 		gotensor.WithBacking(input_classes),
 		gotensor.WithShape(dims...),
 	)

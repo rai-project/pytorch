@@ -69,7 +69,7 @@ func TestObjectDetection(t *testing.T) {
 	resized, err := raiimage.Resize(img, imgOpts...)
 
 	input := make([]*gotensor.Dense, batchSize)
-	imgFloats, err := normalizeImageHWC(resized, preprocessOpts.MeanImage, preprocessOpts.Scale)
+	imgFloats, err := normalizeImageHWC(resized, preprocessOpts.MeanImage, preprocessOpts.Scale[0])
 	if err != nil {
 		panic(err)
 	}
