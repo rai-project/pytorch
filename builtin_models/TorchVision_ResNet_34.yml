@@ -1,7 +1,7 @@
 name: TorchVision_ResNet_34 # name of your model
 framework:
     name: PyTorch # framework for the model
-    version: 1.0 # framework version contraint
+    version: 1.2 # framework version contraint
 version: 1.0 # version information in semantic version format
 container: # containers used to perform model prediction
     # multiple platforms can be specified
@@ -35,7 +35,7 @@ inputs:
           scale: 58.395 # [0.229, 0.224, 0.225]
 output:
     # the type of the output
-    type: feature
+    type: classification
     # a description of the output parameter
     description: the output label
     parameters:

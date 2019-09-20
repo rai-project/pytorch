@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	log *logrus.Entry = logger.New().WithField("pkg", "pytorch")
+	log *logrus.Entry
 )
 
 func init() {

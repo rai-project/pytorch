@@ -8,10 +8,9 @@ import (
 	"github.com/rai-project/dlframework/framework"
 )
 
-// FrameworkManifest ...
 var FrameworkManifest = dlframework.FrameworkManifest{
 	Name:    "PyTorch",
-	Version: "1.0",
+	Version: "1.2",
 	Container: map[string]*dlframework.ContainerHardware{
 		"amd64": {
 			Cpu: "raiproject/carml-pytorch:amd64-cpu",

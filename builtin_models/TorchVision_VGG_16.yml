@@ -1,7 +1,7 @@
 name: TorchVision_VGG_16 # name of your model
 framework:
     name: PyTorch # framework for the model
-    version: 1.0 # framework version contraint
+    version: 1.2 # framework version contraint
 version: 1.0 # version information in semantic version format
 container: # containers used to perform model prediction
     # multiple platforms can be specified
