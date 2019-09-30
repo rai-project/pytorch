@@ -26,7 +26,7 @@ inputs:
       parameters: # type parameters
           element_type: float32
           input_layer: 0
-          layout: HWC
+          layout: CHW
           color_mode: RGB
           dimensions: [3, 224, 224]
           mean: [123.93, 116.28, 103.53]

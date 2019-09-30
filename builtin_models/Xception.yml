@@ -25,6 +25,9 @@ inputs:
       description: the input image
       parameters: # type parameters
           element_type: float32
+          input_layer: 0
+          layout: CHW
+          color_mode: RGB
           dimensions: [3, 229, 229]
           mean: [0.5, 0.5, 0.5]
 output:
