@@ -25,11 +25,15 @@ WORKDIR $GOPATH/src/$PKG
 RUN git clone --depth=1 --branch=master https://${PKG}.git .
 
 RUN dep ensure -v -no-vendor -update \
-    github.com/rai-project/pytorch \
     github.com/rai-project/go-pytorch \
+    github.com/rai-project/go-echarts \
     github.com/rai-project/dlframework \
     github.com/rai-project/evaluation && \
     dep ensure -v -vendor-only
+
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64/stubs:${LD_LIBRARY_PATH}"
+
+RUN ln -s /usr/local/cuda-10.1/targets/x86_64-linux/lib/stubs/libnvidia-ml.so /usr/local/cuda-10.1/targets/x86_64-linux/lib/stubs/libnvidia-ml.so.1 && ldconfig
 
 RUN go build -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
     cd pytorch-agent && \
