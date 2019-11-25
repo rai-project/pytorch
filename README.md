@@ -217,7 +217,7 @@ To see a list of models that we can run with this agent
 To run an inference using the default DNN model `alexnet` with a default input image.
 
 ```
-./tensorflow-agent predict urls --profile=false --publish=false
+./pytorch-agent predict urls --profile=false --publish=false
 ```
 
 The above `--profile=false --publish=false` command parameters tell the agent that we do not want to use profiling capability and publish the results, aas we haven't installed the MongoDB database to store profiling data and the tracer service to accept tracing information.
