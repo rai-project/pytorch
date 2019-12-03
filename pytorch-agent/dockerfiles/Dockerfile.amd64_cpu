@@ -25,17 +25,17 @@ WORKDIR $GOPATH/src/$PKG
 RUN git clone --depth=1 --branch=master https://${PKG}.git .
 
 RUN dep ensure -v -no-vendor -update \
-    github.com/rai-project/pytorch \
     github.com/rai-project/go-pytorch \
+    github.com/rai-project/go-echarts \
     github.com/rai-project/dlframework \
+    github.com/rai-project/tracer \
     github.com/rai-project/evaluation && \
     dep ensure -v -vendor-only
 
 RUN go build -tags=nogpu -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}" && \
     cd pytorch-agent && \
     go install -tags=nogpu && \
-    cd .. && \
-    rm -fr vendor
+    cd ..
 
 ENTRYPOINT ["pytorch-agent"]
 
