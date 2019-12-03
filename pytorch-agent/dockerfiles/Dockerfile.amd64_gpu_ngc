@@ -50,6 +50,7 @@ RUN dep ensure -v -no-vendor -update \
     github.com/rai-project/go-pytorch \
     github.com/rai-project/go-echarts \
     github.com/rai-project/dlframework \
+    github.com/rai-project/tracer \
     github.com/rai-project/evaluation && \
     dep ensure -v -vendor-only
 
@@ -62,7 +63,6 @@ ENV CGO_LDFLAGS "${CGO_LDFLAGS} -L /opt/conda/lib/python3.6/site-packages/torch/
 RUN go build -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} -X ${PKG}/GitCommit=${VCS_REF} -X ${PKG}/BuildDate=${BUILD_DATE}"&& \
     cd pytorch-agent && \
     go install && \
-    cd .. && \
-    rm -fr vendor
+    cd ..
 
 ENTRYPOINT ["pytorch-agent"]
