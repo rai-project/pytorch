@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/pytorch:19.06-py3
+FROM nvcr.io/nvidia/pytorch:20.01-py3
 
 # Build-time metadata as defined at http://label-schema.org
 ARG BUILD_DATE
@@ -53,6 +53,10 @@ RUN dep ensure -v -no-vendor -update \
     github.com/rai-project/tracer \
     github.com/rai-project/evaluation && \
     dep ensure -v -vendor-only
+
+RUN ln -s /usr/local/cuda-10.2/targets/x86_64-linux/lib/stubs/libnvidia-ml.so /opt/conda/lib/python3.6/site-packages/torch/lib/libnvidia-ml.so.1
+
+ENV LD_LIBRARY_PATH /opt/conda/lib/python3.6/site-packages/torch/lib:$LD_LIBRARY_PATH
 
 ENV CGO_CFLAGS "${CGO_CFLAGS} -I /opt/conda/lib/python3.6/site-packages/torch/include -I /opt/conda/lib/python3.6/site-packages/torch/include/torch/csrc/api/include"
 
