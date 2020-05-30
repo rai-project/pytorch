@@ -1485,7 +1485,7 @@
     "steps",
   ]
   pruneopts = "T"
-  revision = "93e476893f9e9d186315a13803106a552030e05f"
+  revision = "4aaa12cfa5874a785cbe70a2bc8a849472c7bc95"
 
 [[projects]]
   branch = "master"
@@ -1530,7 +1530,7 @@
     "writer",
   ]
   pruneopts = "T"
-  revision = "4a55b9cdb00f9fa9fcd00a9ff8424a42ad70edd0"
+  revision = "c120575eed51ba7e0caf8dade4af7682ee0452fb"
 
 [[projects]]
   branch = "master"
@@ -1538,7 +1538,7 @@
   name = "github.com/rai-project/go-echarts"
   packages = ["charts"]
   pruneopts = "T"
-  revision = "b17e08e070c7865136b1f5a9fa7b03b88031aae0"
+  revision = "cf02e63b120787a97f934850e57d547206c9a64d"
 
 [[projects]]
   branch = "master"
@@ -1554,7 +1554,7 @@
   name = "github.com/rai-project/go-pytorch"
   packages = ["."]
   pruneopts = "T"
-  revision = "c365c5577763f3d6c56fc4897771d1c9f2c67ef2"
+  revision = "f2a7fd55aa51f802545b4be3b1b35eec8f56af1b"
 
 [[projects]]
   branch = "master"
@@ -1708,17 +1708,6 @@
 [[projects]]
   branch = "master"
   digest = "0:"
-  name = "github.com/rai-project/pytorch"
-  packages = [
-    ".",
-    "predictor",
-  ]
-  pruneopts = "T"
-  revision = "ae4c09ae823cba861023dbd55a243554d4f1903e"
-
-[[projects]]
-  branch = "master"
-  digest = "0:"
   name = "github.com/rai-project/registry"
   packages = ["."]
   pruneopts = "T"
@@ -1776,7 +1765,7 @@
     "zipkin",
   ]
   pruneopts = "T"
-  revision = "1e2f89bbde3754d4047e230659246f4420df3dc9"
+  revision = "97d6a9677dc3a0e73fc9df74d366323884c19190"
 
 [[projects]]
   branch = "master"
@@ -2718,8 +2707,6 @@
     "github.com/rai-project/image/types",
     "github.com/rai-project/logger",
     "github.com/rai-project/nvidia-smi",
-    "github.com/rai-project/pytorch",
-    "github.com/rai-project/pytorch/predictor",
     "github.com/rai-project/tracer",
     "github.com/rai-project/tracer/ctimer",
     "github.com/rai-project/tracer/jaeger",
