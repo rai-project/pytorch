@@ -26,7 +26,6 @@ RUN git clone --depth=1 --branch=master https://${PKG}.git .
 
 RUN dep ensure -v -no-vendor -update \
     github.com/rai-project/go-pytorch \
-    github.com/rai-project/go-echarts \
     github.com/rai-project/dlframework \
     github.com/rai-project/evaluation \
     github.com/rai-project/tracer && \
@@ -40,5 +39,8 @@ RUN go build -a -installsuffix cgo -ldflags "-s -w -X ${PKG}/Version=${VERSION} 
     cd pytorch-agent && \
     go install && \
     cd ..
+
+# remove stubs since it should only be used when building
+ENV LD_LIBRARY_PATH /opt/libtorch/lib:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
 
 ENTRYPOINT ["pytorch-agent"]

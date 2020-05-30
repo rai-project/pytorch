@@ -9,8 +9,8 @@ jobs:
           make docker_build_cpu
           ./push.sh docker_push_cpu
   - job: GPU
-    pool:
-      vmImage: 'Ubuntu 16.04'
+    timeoutInMinutes: 0
+    pool: 'Impact2'
     steps:
       - bash: |
           docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
@@ -18,8 +18,8 @@ jobs:
           make docker_build_gpu
           ./push.sh docker_push_gpu
   - job: GPU_NGC
-    pool:
-      vmImage: 'Ubuntu 16.04'
+    timeoutInMinutes: 0
+    pool: 'Impact2'
     steps:
       - bash: |
           docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
