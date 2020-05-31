@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rai-project/pytorch)](https://goreportcard.com/report/github.com/rai-project/pytorch)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-[![](https://images.microbadger.com/badges/version/carml/pytorch:ppc64le-gpu-latest.svg)](https://microbadger.com/images/carml/pytorch:ppc64le-gpu-latest> 'Get your own version badge on microbadger.com') [![](https://images.microbadger.com/badges/version/carml/pytorch:ppc64le-cpu-latest.svg)](https://microbadger.com/images/carml/pytorch:ppc64le-cpu-latest 'Get your own version badge on microbadger.com') [![](https://images.microbadger.com/badges/version/carml/pytorch:amd64-cpu-latest.svg)](https://microbadger.com/images/carml/pytorch:amd64-cpu-latest 'Get your own version badge on microbadger.com') [![](https://images.microbadger.com/badges/version/carml/pytorch:amd64-gpu-latest.svg)](https://microbadger.com/images/carml/pytorch:amd64-gpu-latest 'Get your own version badge on microbadger.com')
+[![](https://images.microbadger.com/badges/version/carml/pytorch-agent:ppc64le-gpu-latest.svg)](https://microbadger.com/images/carml/pytorch-agent:ppc64le-gpu-latest> 'Get your own version badge on microbadger.com') [![](https://images.microbadger.com/badges/version/carml/pytorch-agent:ppc64le-cpu-latest.svg)](https://microbadger.com/images/carml/pytorch-agent:ppc64le-cpu-latest 'Get your own version badge on microbadger.com') [![](https://images.microbadger.com/badges/version/carml/pytorch-agent:amd64-cpu-latest.svg)](https://microbadger.com/images/carml/pytorch-agent:amd64-cpu-latest "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/carml/pytorch-agent:amd64-gpu-latest.svg)](https://microbadger.com/images/carml/pytorch-agent:amd64-gpu-latest "Get your own version badge on microbadger.com") [![](https://images.microbadger.com/badges/version/carml/pytorch-agent:amd64-gpu-ngc-latest.svg)](https://microbadger.com/images/carml/pytorch-agent:amd64-gpu-ngc-latest "Get your own version badge on microbadger.com")
 
 This is the Pytorch agent for [MLModelScope](mlmodelscope.org), an open-source framework and hardware agnostic, extensible and customizable platform for evaluating and profiling ML models across datasets / frameworks / systems, and within AI application pipelines.
 
@@ -73,7 +73,7 @@ export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/opt/libtorch/lib
 
 You can test the installed Pytorch C++ library using an [example C++ program](https://pytorch.org/tutorials/advanced/cpp_frontend.html), although we suggest running an example in `github.com/rai-project/go-pytorch` as per its documentation to confirm library installation.
 
-To build the Pytorch C++ library from source, refer to [github.com/rai-project/go-pytorch/scripts](https://github.com/rai-project/go-pytorch).
+To build the Pytorch C++ library from source, refer to [https://github.com/pytorch/pytorch#installation](https://github.com/pytorch/pytorch#installation) and the code for [building go-pytorch dockerfiles](https://github.com/rai-project/go-pytorch/blob/master/dockerfiles/Dockerfile.amd64_gpu).
 
 ### Use libjpeg-turbo for Image Preprocessing
 
@@ -116,7 +116,6 @@ Download and install the MLModelScope Pytorch Agent by running the following com
 
 ```
 go get -v github.com/rai-project/pytorch
-
 ```
 
 You can then install the dependency packages through `go get`.
@@ -268,7 +267,7 @@ The trace server runs on http://localhost:16686
 
 ### Starting Registry Server
 
-This service is not required if using TensorFlow-agent for local evaluation.
+This service is not required if using pytorch-agent for local evaluation.
 
 - On x86 (e.g. intel) machines, start [consul](https://hub.docker.com/_/consul/) by
 
@@ -325,9 +324,9 @@ go get -u -v ./...
 
 You also need to have the `.carml_config.yml` configuraiton file as discussed above to be placed under $HOME as `.carml_config.yml`
 
-You can also setup all the external services as discussed above in your local host machine where you plan to use the Tensorflow Docker container.
+You can also setup all the external services as discussed above in your local host machine where you plan to use the Pytorch Docker container.
 
-## Setup within Pytorch Docker Image (TO BE UPDATED)
+## Setup within Pytorch Docker Image
 
 Continue if you have
 
@@ -340,17 +339,15 @@ Continue if you have
 Assuming you want to use the NGC Pytorch docker image. Here is an example on how to do this:
 
 ```
-nvidia-docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -it --privileged=true --network host \
+docker run --gpus=all --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -it --privileged=true --network host \
 -v $GOPATH:/workspace/go1.12/global \
 -v $GOROOT:/workspace/go1.12_root \
 -v ~/.carml_config.yml:/root/.carml_config.yml \
--v ~/data/carml:/root/data/carml \
-nvcr.io/nvidia/tensorflow:19.06-py2
+nvcr.io/nvidia/pytorch:20.01-py3
 ```
 
-NOTE: The SHMEM allocation limit is set to the default of 64MB.  This may be
-   insufficient for TensorFlow.  NVIDIA recommends the use of the following flags:
-   ```nvidia-docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 ...```
+NOTE: The SHMEM allocation limit is set to the default of 64MB.  This may be insufficient for PyTorch.  NVIDIA recommends the use of the following flags:
+   ```--shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 ...```
 
 Within the container, set up the environment so that the agent can find the Pytorch C++ library.
 
@@ -358,13 +355,17 @@ Within the container, set up the environment so that the agent can find the Pyto
 export GOPATH=/workspace/go1.12/global
 export GOROOT=/workspace/go1.12_root
 export PATH=$GOROOT/bin:$PATH
+export LD_LIBRARY_PATH=/opt/conda/lib/python3.6/site-packages/torch/lib:$LD_LIBRARY_PATH
 
-ln -s /usr/local/lib/tensorflow/libtensorflow_cc.so /usr/local/lib/tensorflow/libtensorflow.so
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/tensorflow
-export CGO_LDFLAGS="${CGO_LDFLAGS} -L /usr/local/lib/tensorflow/"
+ln -s /usr/local/cuda-10.2/targets/x86_64-linux/lib/stubs/libnvidia-ml.so /opt/conda/lib/python3.6/site-packages/torch/lib/libnvidia-ml.so.1
 
-export PATH=$PATH:$(go env GOPATH)/bin
-export GODEBUG=cgocheck=0
+export CGO_LDFLAGS "${CGO_LDFLAGS} -L /opt/conda/lib/python3.6/site-packages/torch/lib"
+export CGO_CFLAGS "${CGO_CFLAGS} -I /opt/conda/lib/python3.6/site-packages/torch/include -I /opt/conda/lib/python3.6/site-packages/torch/include/torch/csrc/api/include"
+export CGO_CXXFLAGS "${CGO_CXXFLAGS} -I /opt/conda/lib/python3.6/site-packages/torch/include -I /opt/conda/lib/python3.6/site-packages/torch/include/torch/csrc/api/include"
+
+export PATH=$PATH:$(go env GOPATH)/bin  
+export GODEBUG=cgocheck=0  
+
 ```
 
 Build the Pytorch agent with GPU enabled
@@ -400,9 +401,33 @@ Run ```./pytorch-agent predict``` to evaluate a model. This runs the default eva
 An example run is
 
 ```
-./pytorch-agent predict urls --trace_level=FRAMEWORK_TRACE --model_name=TorchVision_AlexNet
+./pytorch-agent predict urls --model_name TorchVision_Alexnet --profile=false --publish=false
 ```
 
 Refer to [TODO] to run the web UI to interact with the agent.
 
-# Notes on installing Pytorch C++ from source (TO BE UPDATED)
+# Use the Agent through Pre-built Docker Images
+
+We have [pre-built docker images](https://hub.docker.com/r/carml/pytorch-agent/tags) on Dockerhub. The images are `carml/pytorch-agent:amd64-cpu-latest`, `carml/pytorch-agent:amd64-gpu-latest` and `carml/pytorch-agent:amd64-gpu-ngc-latest`. The entrypoint is set as `pytorch-agent` thus these images act similar as the command line above.
+
+An example run is
+
+```
+docker run --gpus=all --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 --privileged=true \
+    --network host \
+    -v ~/.carml_config.yml:/root/.carml_config.yml \
+    -v ~/results:/go/src/github.com/rai-project/pytorch/results \
+    carml/pytorch-agent:amd64-gpu-latest predict urls --model_name TorchVision_Alexnet --profile=false --publish=false
+```
+NOTE: The SHMEM allocation limit is set to the default of 64MB.  This may be insufficient for PyTorch.  NVIDIA recommends the use of the following flags:
+   ```--shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 ...```
+
+NOTE: To run with GPU, you need to meet following requirements:
+
+- Docker >= 19.03 with nvidia-container-toolkit (otherwise need to use nvidia-docker)
+- CUDA >= 10.1 (10.2 for NGC)
+- NVIDIA Driver >= 418.39 (440.33 for NGC)
+
+# Notes on installing Pytorch C++ from source
+
+To build the Pytorch C++ library from source, refer to [https://github.com/pytorch/pytorch#installation](https://github.com/pytorch/pytorch#installation) and the code for [building go-pytorch dockerfiles](https://github.com/rai-project/go-pytorch/blob/master/dockerfiles/Dockerfile.amd64_gpu).
