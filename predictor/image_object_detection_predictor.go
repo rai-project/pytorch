@@ -6,8 +6,8 @@ import (
 	"io"
 	"os"
 	"strings"
+	"fmt"
 
-	"github.com/k0kubun/pp"
 	opentracing "github.com/opentracing/opentracing-go"
 	olog "github.com/opentracing/opentracing-go/log"
 	"github.com/pkg/errors"
@@ -20,7 +20,6 @@ import (
 	gopytorch "github.com/rai-project/go-pytorch"
 	"github.com/rai-project/pytorch"
 	"github.com/rai-project/tracer"
-	"github.com/rai-project/tracer/ctimer"
 	gotensor "gorgonia.org/tensor"
 )
 
@@ -251,30 +250,6 @@ func (p *ObjectDetectionPredictor) GetOutputLayerName(reader io.Reader, layer st
 
 // Predict ...
 func (p *ObjectDetectionPredictor) Predict(ctx context.Context, data interface{}, opts ...options.Option) error {
-	if p.TraceLevel() >= tracer.FRAMEWORK_TRACE {
-		p.predictor.EnableProfiling()
-		err := p.predictor.StartProfiling("pytorch", "predict")
-		if err != nil {
-			log.WithError(err).WithField("framework", "pytorch").Error("unable to start framework profiling")
-		} else {
-			defer func() {
-				p.predictor.EndProfiling()
-				profBuffer, err := p.predictor.ReadProfile()
-				if err != nil {
-					pp.Println(err)
-					return
-				}
-				t, err := ctimer.New(profBuffer)
-				if err != nil {
-					panic(err)
-					return
-				}
-				t.Publish(ctx, tracer.FRAMEWORK_TRACE)
-				p.predictor.DisableProfiling()
-			}()
-		}
-	}
-
 	if data == nil {
 		return errors.New("input data nil")
 	}
@@ -318,8 +293,11 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 	}
 	// TODO iterate over batchsize (assumed 1 for now)
 	// make armax, max code cleaner
+
+
 	scores := outputs[0].Data().([]float32)
 	boxes := outputs[1].Data().([]float32)
+
 	var input_classes []float32
 	var input_scores []float32
 	for curObj := 0; curObj < len(boxes)/4; curObj++ {
@@ -336,6 +314,9 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 		input_scores = append(input_scores, float32(max_score))
 		input_classes = append(input_classes, float32(max_index))
 	}
+
+	fmt.Println(len(input_scores))
+
 	dims := []int{1, len(boxes) / 4}
 	tensor_classes := gotensor.New(
 		gotensor.Of(gotensor.Float32),

@@ -18,7 +18,7 @@ import (
 
 func TestObjectDetection(t *testing.T) {
 	py.Register()
-	model, err := py.FrameworkManifest.FindModel("mobilenet_ssd_v1.0:1.0")
+	model, err := py.FrameworkManifest.FindModel("MobileNet_SSD_Lite_v2.0:2.0")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, model)
 
@@ -69,7 +69,7 @@ func TestObjectDetection(t *testing.T) {
 	resized, err := raiimage.Resize(img, imgOpts...)
 
 	input := make([]*gotensor.Dense, batchSize)
-	imgFloats, err := normalizeImageHWC(resized, preprocessOpts.MeanImage, preprocessOpts.Scale[0])
+	imgFloats, err := normalizeImageCHW(resized, preprocessOpts.MeanImage, preprocessOpts.Scale)
 	if err != nil {
 		panic(err)
 	}
@@ -93,6 +93,14 @@ func TestObjectDetection(t *testing.T) {
 		return
 	}
 
-	pp.Println("Prediction: ", pred[0][0].GetProbability())
-
+	for ii := 0; ii < len(pred[0]) ; ii++ {
+		if pred[0][ii].GetBoundingBox().GetLabel() != "background"  {
+			pp.Println("Label: ", pred[0][ii].GetBoundingBox().GetLabel())
+			pp.Println("Probability: ", pred[0][ii].GetProbability())
+			pp.Println("Xmax: ", pred[0][ii].GetBoundingBox().GetXmax())
+			pp.Println("Xmin: ", pred[0][ii].GetBoundingBox().GetXmin())
+			pp.Println("Ymax: ", pred[0][ii].GetBoundingBox().GetYmax())
+			pp.Println("Ymin: ", pred[0][ii].GetBoundingBox().GetYmin())
+		}
+	}
 }

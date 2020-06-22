@@ -19,7 +19,6 @@ import (
 	gopytorch "github.com/rai-project/go-pytorch"
 	"github.com/rai-project/pytorch"
 	"github.com/rai-project/tracer"
-	"github.com/rai-project/tracer/ctimer"
 	gotensor "gorgonia.org/tensor"
 )
 
@@ -219,29 +218,6 @@ func (p *ImageClassificationPredictor) loadPredictor(ctx context.Context) error 
 
 // Predict ...
 func (p *ImageClassificationPredictor) Predict(ctx context.Context, data interface{}, opts ...options.Option) error {
-	if p.TraceLevel() >= tracer.FRAMEWORK_TRACE {
-		p.predictor.EnableProfiling()
-		err := p.predictor.StartProfiling("pytorch", "predict")
-		if err != nil {
-			log.WithError(err).WithField("framework", "pytorch").Error("unable to start framework profiling")
-		} else {
-			defer func() {
-				p.predictor.EndProfiling()
-				profBuffer, err := p.predictor.ReadProfile()
-				if err != nil {
-					pp.Println(err)
-					return
-				}
-				t, err := ctimer.New(profBuffer)
-				if err != nil {
-					panic(err)
-					return
-				}
-				t.Publish(ctx, tracer.FRAMEWORK_TRACE)
-				p.predictor.DisableProfiling()
-			}()
-		}
-	}
 
 	if data == nil {
 		return errors.New("input data nil")

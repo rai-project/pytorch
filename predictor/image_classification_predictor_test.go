@@ -17,7 +17,7 @@ import (
 	gotensor "gorgonia.org/tensor"
 )
 
-func normalizeImageHWC(in0 image.Image, mean []float32, scale float32) ([]float32, error) {
+func normalizeImageHWC(in0 image.Image, mean []float32, scale []float32) ([]float32, error) {
 	height := in0.Bounds().Dy()
 	width := in0.Bounds().Dx()
 	out := make([]float32, 3*height*width)
@@ -28,9 +28,9 @@ func normalizeImageHWC(in0 image.Image, mean []float32, scale float32) ([]float3
 				offset := y*in.Stride + x*3
 				rgb := in.Pix[offset : offset+3]
 				r, g, b := rgb[0], rgb[1], rgb[2]
-				out[offset+0] = ((float32(r>>8) / 255.0) - (mean[0] / 255.0)) / (scale / 255.0)
-				out[offset+1] = ((float32(g>>8) / 255.0) - (mean[1] / 255.0)) / (scale / 255.0)
-				out[offset+2] = ((float32(b>>8) / 255.0) - (mean[2] / 255.0)) / (scale / 255.0)
+				out[offset+0] = (float32(r) - mean[0]) / scale[0]
+				out[offset+1] = (float32(g) - mean[1]) / scale[1]
+				out[offset+2] = (float32(b) - mean[2]) / scale[2]
 			}
 		}
 	case *types.BGRImage:
@@ -39,10 +39,9 @@ func normalizeImageHWC(in0 image.Image, mean []float32, scale float32) ([]float3
 				offset := y*in.Stride + x*3
 				bgr := in.Pix[offset : offset+3]
 				b, g, r := bgr[0], bgr[1], bgr[2]
-				out[offset+0] = ((float32(b>>8) / 255.0) - (mean[0] / 255.0)) / (scale / 255.0)
-				out[offset+0] = ((float32(g>>8) / 255.0) - (mean[1] / 255.0)) / (scale / 255.0)
-				out[offset+0] = ((float32(r>>8) / 255.0) - (mean[2] / 255.0)) / (scale / 255.0)
-
+				out[offset+0] = (float32(b) - mean[0]) / scale[0]
+				out[offset+1] = (float32(g) - mean[1]) / scale[1]
+				out[offset+2] = (float32(r) - mean[2]) / scale[2]
 			}
 		}
 	default:
@@ -52,19 +51,35 @@ func normalizeImageHWC(in0 image.Image, mean []float32, scale float32) ([]float3
 	return out, nil
 }
 
-func normalizeImageCHW(in *types.RGBImage, mean []float32, stddev []float32) ([]float32, error) {
-	height := in.Bounds().Dy()
-	width := in.Bounds().Dx()
+func normalizeImageCHW(in0 image.Image, mean []float32, scale []float32) ([]float32, error) {
+	height := in0.Bounds().Dy()
+	width := in0.Bounds().Dx()
 	out := make([]float32, 3*height*width)
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
-			offset := y*in.Stride + x*3
-			rgb := in.Pix[offset : offset+3]
-			r, g, b := rgb[0], rgb[1], rgb[2]
-			out[y*width+x] = ((float32(r>>8) / 255.0) - mean[0]) / stddev[0]
-			out[width*height+y*width+x] = ((float32(g>>8) / 255.0) - mean[1]) / stddev[1]
-			out[2*width*height+y*width+x] = ((float32(b>>8) / 255.0) - mean[2]) / stddev[2]
+	switch in := in0.(type) {
+	case *types.RGBImage:
+		for y := 0; y < height; y++ {
+			for x := 0; x < width; x++ {
+				offset := y*in.Stride + x*3
+				rgb := in.Pix[offset : offset+3]
+				r, g, b := rgb[0], rgb[1], rgb[2]
+				out[0*width*height+y*width+x] = (float32(r) - mean[0]) / scale[0]
+				out[1*width*height+y*width+x] = (float32(g) - mean[1]) / scale[1]
+				out[2*width*height+y*width+x] = (float32(b) - mean[2]) / scale[2]
+			}
 		}
+	case *types.BGRImage:
+		for y := 0; y < height; y++ {
+			for x := 0; x < width; x++ {
+				offset := y*in.Stride + x*3
+				rgb := in.Pix[offset : offset+3]
+				r, g, b := rgb[0], rgb[1], rgb[2]
+				out[0*width*height+y*width+x] = (float32(b) - mean[0]) / scale[0]
+				out[1*width*height+y*width+x] = (float32(g) - mean[1]) / scale[1]
+				out[2*width*height+y*width+x] = (float32(r) - mean[2]) / scale[2]
+			}
+		}
+	default:
+		panic("unreachable")
 	}
 	return out, nil
 }
@@ -138,7 +153,7 @@ func TestImageClassification(t *testing.T) {
 	resized, err := raiimage.Resize(img, imgOpts...)
 
 	input := make([]*gotensor.Dense, batchSize)
-	imgFloats, err := normalizeImageHWC(resized, preprocessOpts.MeanImage, preprocessOpts.Scale[0])
+	imgFloats, err := normalizeImageCHW(resized, preprocessOpts.MeanImage, preprocessOpts.Scale)
 	if err != nil {
 		panic(err)
 	}
@@ -162,7 +177,11 @@ func TestImageClassification(t *testing.T) {
 		return
 	}
 
-	pp.Println("Prediction: ", pred[0][0].GetClassification().GetIndex())
+	pp.Println("Index: ", pred[0][0].GetClassification().GetIndex())
+	pp.Println("Label: ", pred[0][0].GetClassification().GetLabel())
 	pp.Println("Probability: ", pred[0][0].GetProbability())
 
+	// The value not applied softmax for torchvision alexnet
+	// assert.InDelta(t, float32(15.774), pred[0][0].GetProbability(), 0.001)
+	// assert.Equal(t, int32(103), pred[0][0].GetClassification().GetIndex())
 }
