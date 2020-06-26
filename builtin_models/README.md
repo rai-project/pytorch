@@ -51,6 +51,7 @@ Run `make generate` in the root `pytorch` (`..`) after updating model descriptio
 | Xception                    | ../predictor/_fixtures/platypus.jpg | n01873310 platypus ... |  9.881      |
 
 ### Image Object Detection
+
 Note: Only recording first five detection, excluding background.
 | Name                        | Image                                   | Label | Xmin  | Xmax  | Ymin  | Ymax  | Probability |
 |:---------------------------:|:---------------------------------------:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----------:|
@@ -66,4 +67,7 @@ Note: Only recording first five detection, excluding background.
 |                             |                                         | car   | 0.583 | 0.807 | 0.007 | 0.335 | 0.987       |
 
 ### Image Enhancement
-TODO
+
+| Name                        | Image                               | (R, G, B) at (0, 0) (top-left corner) |
+|:---------------------------:|:-----------------------------------:|:-------------------------------------:|
+| SRGAN_v1.0                  | ../predictor/_fixtures/penguin.png  | (0xc2, 0xc2, 0xc6)                    |

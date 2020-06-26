@@ -1,14 +1,14 @@
 package predictor
 
 import (
-	"bytes"
 	"context"
-	goimage "image"
+	"image"
+	"image/color"
+	"image/jpeg"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/k0kubun/pp"
 	"github.com/rai-project/dlframework"
 
 	"github.com/rai-project/dlframework/framework/options"
@@ -51,9 +51,6 @@ func TestImageEnhancement(t *testing.T) {
 
 	preprocessOpts, err := predictor.GetPreprocessOptions()
 	assert.NoError(t, err)
-	channels := preprocessOpts.Dims[0]
-	height := preprocessOpts.Dims[1]
-	width := preprocessOpts.Dims[2]
 	mode := preprocessOpts.ColorMode
 
 	var imgOpts []raiimage.Option
@@ -68,12 +65,12 @@ func TestImageEnhancement(t *testing.T) {
 		panic(err)
 	}
 
-	imgOpts = append(imgOpts, raiimage.Resized(height, width))
-	imgOpts = append(imgOpts, raiimage.ResizeAlgorithm(types.ResizeAlgorithmLinear))
-	resized, err := raiimage.Resize(img, imgOpts...)
+	channels := 3
+	height := img.Bounds().Dy()
+	width := img.Bounds().Dx()
 
 	input := make([]*gotensor.Dense, batchSize)
-	imgFloats, err := normalizeImageHWC(resized, preprocessOpts.MeanImage, preprocessOpts.Scale)
+	imgFloats, err := normalizeImageCHW(img, preprocessOpts.MeanImage, preprocessOpts.Scale)
 	if err != nil {
 		panic(err)
 	}
@@ -97,12 +94,43 @@ func TestImageEnhancement(t *testing.T) {
 		panic(err)
 	}
 
-	f, ok := pred[0][0].Feature.(*dlframework.Feature_Image)
+	f, ok := pred[0][0].Feature.(*dlframework.Feature_RawImage)
 	if !ok {
 		panic("expecting an image feature")
 	}
 
-	hrimg, _, _ := goimage.Decode(bytes.NewReader(f.Image.GetData()))
+	fl := f.RawImage.GetFloatList()
+	outWidth := f.RawImage.GetWidth()
+	outHeight := f.RawImage.GetHeight()
+	offset := 0
+	outImg := types.NewRGBImage(image.Rect(0, 0, int(outWidth), int(outHeight)))
+	for h := 0; h < int(outHeight); h++ {
+		for w := 0; w < int(outWidth); w++ {
+			R := uint8(fl[offset+0])
+			G := uint8(fl[offset+1])
+			B := uint8(fl[offset+2])
+			outImg.Set(w, h, color.RGBA{R, G, B, 255})
+			offset += 3
+		}
+	}
 
-	pp.Println(hrimg.At(0, 0))
+	if false {
+		output, err := os.Create("output.jpg")
+		if err != nil {
+			panic(err)
+		}
+		defer output.Close()
+		err = jpeg.Encode(output, outImg, nil)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	assert.Equal(t, int32(1356), outHeight)
+	assert.Equal(t, int32(2040), outWidth)
+	assert.Equal(t, types.RGB{
+		R: 0xc2,
+		G: 0xc2,
+		B: 0xc6,
+	}, outImg.At(0, 0))
 }

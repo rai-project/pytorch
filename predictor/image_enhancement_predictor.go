@@ -271,17 +271,13 @@ func (p *ImageEnhancementPredictor) ReadPredictedFeatures(ctx context.Context) (
 	if err != nil {
 		return nil, err
 	}
-	// would be getting only one tensor as outputs since
-	// we are performing image classification
-	//output := outputs[0].Data().([]float32)
-	//if err != nil {
-	//  return nil, err
-	//}
+
 	output_array := outputs[0].Data().([]float32)
 	output_batch := outputs[0].Shape()[0]
 	output_channels := outputs[0].Shape()[1]
 	output_height := outputs[0].Shape()[2]
-	output_width := outputs[1].Shape()[3]
+	output_width := outputs[0].Shape()[3]
+
 	// convert 1D array to a 4D array in order to make it compatible with CreateRawImageFeatures function call
 	e := make([][][][]float32, output_batch)
 	for b := 0; b < output_batch; b++ {
@@ -296,9 +292,9 @@ func (p *ImageEnhancementPredictor) ReadPredictedFeatures(ctx context.Context) (
 	for b := 0; b < output_batch; b++ {
 		for h := 0; h < output_height; h++ {
 			for w := 0; w < output_width; w++ {
-				e[b][h][w][0] = output_array[b*(output_height*output_width*output_channels)+h*output_width+w*output_channels+0]
-				e[b][h][w][1] = output_array[b*(output_height*output_width*output_channels)+h*output_width+w*output_channels+1]
-				e[b][h][w][2] = output_array[b*(output_height*output_width*output_channels)+h*output_width+w*output_channels+2]
+				e[b][h][w][0] = output_array[b*output_height*output_width*output_channels+0*output_height*output_width+h*output_width+w]
+				e[b][h][w][1] = output_array[b*output_height*output_width*output_channels+1*output_height*output_width+h*output_width+w]
+				e[b][h][w][2] = output_array[b*output_height*output_width*output_channels+2*output_height*output_width+h*output_width+w]
 			}
 		}
 	}

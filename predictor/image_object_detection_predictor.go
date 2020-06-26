@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	"fmt"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	olog "github.com/opentracing/opentracing-go/log"
@@ -291,13 +290,9 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 	if err != nil {
 		return nil, err
 	}
-	// TODO iterate over batchsize (assumed 1 for now)
-	// make armax, max code cleaner
-
 
 	scores := outputs[0].Data().([]float32)
 	boxes := outputs[1].Data().([]float32)
-
 	var input_classes []float32
 	var input_scores []float32
 	for curObj := 0; curObj < len(boxes)/4; curObj++ {
@@ -314,9 +309,6 @@ func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([
 		input_scores = append(input_scores, float32(max_score))
 		input_classes = append(input_classes, float32(max_index))
 	}
-
-	fmt.Println(len(input_scores))
-
 	dims := []int{1, len(boxes) / 4}
 	tensor_classes := gotensor.New(
 		gotensor.Of(gotensor.Float32),

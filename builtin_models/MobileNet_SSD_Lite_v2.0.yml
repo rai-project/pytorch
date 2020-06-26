@@ -36,7 +36,7 @@ inputs:
           scale: 128
 output:
     # the type of the output
-    type: classification
+    type: boundingbox
     # a description of the output parameter
     description: the output label
     parameters:

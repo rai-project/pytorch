@@ -261,12 +261,6 @@ func (p *ImageClassificationPredictor) ReadPredictedFeatures(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	// would be getting only one tensor as outputs since
-	// we are performing image classification
-	//output := outputs[0].Data().([]float32)
-	//if err != nil {
-	//	return nil, err
-	//}
 
 	return p.CreateClassificationFeatures(ctx, outputs[0], p.labels)
 }
