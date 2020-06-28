@@ -1,0 +1,53 @@
+name: TorchVision_DeepLabv3_Resnet101 # name of your model
+framework:
+    name: PyTorch # framework for the model
+    version: 1.2 # framework version constraint
+version: 1.0 # version information in semantic version format
+container: # containers used to perform model prediction
+    # multiple platforms can be specified
+    amd64:
+        cpu: raiproject/carml-pytorch:amd64-cpu
+        gpu: raiproject/carml-pytorch:amd64-gpu
+    ppc64le:
+        cpu: raiproject/carml-pytorch:ppc64le-gpu
+        gpu: raiproject/carml-pytorch:ppc64le-gpu
+description: >
+    The images have to be loaded in to a range of [0, 1] and then normalized using mean = [0.485, 0.456, 0.406] and std = [0.229, 0.224, 0.225].
+references: # references to papers / websites / etc.. describing the model
+    - https://arxiv.org/pdf/1706.05587.pdf
+    - https://github.com/pytorch/vision/blob/master/torchvision/models/segmentation/deeplabv3.py
+    - https://pytorch.org/docs/stable/torchvision/models.html
+# license of the model
+license: unrestricted
+# inputs to the model
+inputs:
+    # first input type for the model
+    - type: image
+      # description of the first input
+      description: the input image
+      parameters: # type parameters
+          element_type: float32
+          input_layer: 0
+          layout: CHW
+          color_mode: RGB
+          mean: [123.675, 116.280, 103.530] # [0.485, 0.456, 0.406] * 255
+          scale: [58.395, 57.120, 57.375]   # [0.229, 0.224. 0.225] * 255
+output:
+  type: semanticsegment
+  description: the output semantic segment # a description of the output parameter
+  parameters:
+    element_type: int64
+    masks_layer: SemanticPredictions
+    features_url: https://s3.amazonaws.com/store.carml.org/models/tensorflow/models/deeplabv3_mnv2_pascal_train_aug_2018_01_29/pascal-voc-classes.txt
+    features_checksum: 9ce439bcfb44c304e49a0fe1ae398f69
+model: # specifies model graph and weights resources
+    graph_path: https://s3.amazonaws.com/store.carml.org/models/pytorch/deeplabv3_resnet101.pt
+    is_archive:
+        false # if set, then the base_url is a url to an archive
+        # the graph_path and weights_path then denote the
+        # file names of the graph and weights within the archive
+    graph_checksum: 8adc41a27060bfadfe6fcde02dff59a0
+attributes: # extra network attributes
+    kind: CNN # the kind of neural network (CNN, RNN, ...)
+    training_dataset: COCO 2017 # dataset used to for training
+    manifest_author: Yen-Hsiang Chang

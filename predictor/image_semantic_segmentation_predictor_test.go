@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/k0kubun/pp"
 	"github.com/rai-project/dlframework/framework/options"
 	raiimage "github.com/rai-project/image"
 	"github.com/rai-project/image/types"
@@ -16,9 +15,9 @@ import (
 	gotensor "gorgonia.org/tensor"
 )
 
-func TestObjectDetection(t *testing.T) {
+func TestSemanticSegmentation(t *testing.T) {
 	py.Register()
-	model, err := py.FrameworkManifest.FindModel("MobileNet_SSD_Lite_v2.0:2.0")
+	model, err := py.FrameworkManifest.FindModel("TorchVision_DeepLabv3_Resnet101:1.0")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, model)
 
@@ -33,7 +32,7 @@ func TestObjectDetection(t *testing.T) {
 		options.Device(device, 0),
 		options.BatchSize(batchSize))
 
-	predictor, err := NewObjectDetectionPredictor(*model, options.WithOptions(opts))
+	predictor, err := NewSemanticSegmentationPredictor(*model, options.WithOptions(opts))
 	assert.NoError(t, err)
 	assert.NotEmpty(t, predictor)
 	defer predictor.Close()
@@ -47,9 +46,6 @@ func TestObjectDetection(t *testing.T) {
 
 	preprocessOpts, err := predictor.GetPreprocessOptions()
 	assert.NoError(t, err)
-	channels := preprocessOpts.Dims[0]
-	height := preprocessOpts.Dims[1]
-	width := preprocessOpts.Dims[2]
 	mode := preprocessOpts.ColorMode
 
 	var imgOpts []raiimage.Option
@@ -64,12 +60,12 @@ func TestObjectDetection(t *testing.T) {
 		panic(err)
 	}
 
-	imgOpts = append(imgOpts, raiimage.Resized(height, width))
-	imgOpts = append(imgOpts, raiimage.ResizeAlgorithm(types.ResizeAlgorithmLinear))
-	resized, err := raiimage.Resize(img, imgOpts...)
+	height := img.Bounds().Dy()
+	width := img.Bounds().Dx()
+	channels := 3
 
 	input := make([]*gotensor.Dense, batchSize)
-	imgFloats, err := normalizeImageCHW(resized, preprocessOpts.MeanImage, preprocessOpts.Scale)
+	imgFloats, err := normalizeImageCHW(img, preprocessOpts.MeanImage, preprocessOpts.Scale)
 	if err != nil {
 		panic(err)
 	}
@@ -93,14 +89,8 @@ func TestObjectDetection(t *testing.T) {
 		return
 	}
 
-	for ii := 0; ii < len(pred[0]); ii++ {
-		if pred[0][ii].GetBoundingBox().GetLabel() != "background" {
-			pp.Println("Label: ", pred[0][ii].GetBoundingBox().GetLabel())
-			pp.Println("Probability: ", pred[0][ii].GetProbability())
-			pp.Println("Xmax: ", pred[0][ii].GetBoundingBox().GetXmax())
-			pp.Println("Xmin: ", pred[0][ii].GetBoundingBox().GetXmin())
-			pp.Println("Ymax: ", pred[0][ii].GetBoundingBox().GetYmax())
-			pp.Println("Ymin: ", pred[0][ii].GetBoundingBox().GetYmin())
-		}
-	}
+	sseg := pred[0][0].GetSemanticSegment()
+	intMask := sseg.GetIntMask()
+
+	assert.Equal(t, int32(7), intMask[247039])
 }

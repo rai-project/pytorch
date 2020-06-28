@@ -71,3 +71,10 @@ Note: Only recording first five detection, excluding background.
 | Name                        | Image                               | (R, G, B) at (0, 0) (top-left corner) |
 |:---------------------------:|:-----------------------------------:|:-------------------------------------:|
 | SRGAN_v1.0                  | ../predictor/_fixtures/penguin.png  | (0xc2, 0xc2, 0xc6)                    |
+
+### Image Semantic Segmentation
+
+| Name                            | Image                                    | label at bottom-right corner |
+|:-------------------------------:|:----------------------------------------:|:----------------------------:|
+| TorchVision_DeepLabv3_Resnet101 | ../predictor/_fixtures/lane_control.jpg  | 7 (car)                      |
+| TorchVision_Fcn_Resnet101       | ../predictor/_fixtures/lane_control.jpg  | 7 (car)                      |
