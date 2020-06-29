@@ -1,13 +1,13 @@
 name: Caffe_ResNet_101 # name of your model
 framework:
     name: PyTorch # framework for the model
-    version: 1.2 # framework version contraint
+    version: 1.2 # framework version constraint
 version: 1.0 # version information in semantic version format
 container: # containers used to perform model prediction
     # multiple platforms can be specified
     amd64:
-        gpu: raiproject/carml-pytorch:amd64-cpu
-        cpu: raiproject/carml-pytorch:amd64-gpu
+        cpu: raiproject/carml-pytorch:amd64-cpu
+        gpu: raiproject/carml-pytorch:amd64-gpu
     ppc64le:
         cpu: raiproject/carml-pytorch:ppc64le-gpu
         gpu: raiproject/carml-pytorch:ppc64le-gpu
@@ -16,6 +16,7 @@ description: >
     The pre-trained model expects input in mini-batches of 3-channel BGR images of shape (3 x H x W), where H and W are expected to be 224. The images have to be loaded in to a range of [0, 255] and then normalized using mean = [102.9801, 115.9465, 122.7717] and std = [1, 1, 1]
 references: # references to papers / websites / etc.. describing the model
     - https://github.com/Cadene/pretrained-models.pytorch#reproducing-results
+    - https://github.com/Cadene/pretrained-models.pytorch/blob/master/pretrainedmodels/models/cafferesnet.py
     - https://github.com/KaimingHe/deep-residual-networks
 # license of the model
 license: unrestricted

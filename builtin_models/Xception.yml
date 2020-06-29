@@ -1,13 +1,13 @@
 name: Xception # name of your model
 framework:
     name: PyTorch # framework for the model
-    version: 1.2 # framework version contraint
+    version: 1.2 # framework version constraint
 version: 1.0 # version information in semantic version format
 container: # containers used to perform model prediction
     # multiple platforms can be specified
     amd64:
-        gpu: raiproject/carml-pytorch:amd64-cpu
-        cpu: raiproject/carml-pytorch:amd64-gpu
+        cpu: raiproject/carml-pytorch:amd64-cpu
+        gpu: raiproject/carml-pytorch:amd64-gpu
     ppc64le:
         cpu: raiproject/carml-pytorch:ppc64le-gpu
         gpu: raiproject/carml-pytorch:ppc64le-gpu
@@ -28,8 +28,9 @@ inputs:
           input_layer: 0
           layout: CHW
           color_mode: RGB
-          dimensions: [3, 229, 229]
-          mean: [0.5, 0.5, 0.5]
+          dimensions: [3, 299, 299]
+          mean: [127.5, 127.5, 127.5]
+          scale: [127.5, 127.5, 127.5]
 output:
     # the type of the output
     type: classification

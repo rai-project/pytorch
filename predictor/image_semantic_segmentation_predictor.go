@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/k0kubun/pp"
 	opentracing "github.com/opentracing/opentracing-go"
 	olog "github.com/opentracing/opentracing-go/log"
 	"github.com/pkg/errors"
@@ -22,25 +23,14 @@ import (
 	gotensor "gorgonia.org/tensor"
 )
 
-// ObjectDetectionPredictor ...
-type ObjectDetectionPredictor struct {
+type SemanticSegmentationPredictor struct {
 	common.ImagePredictor
-	predictor          *gopytorch.Predictor
-	labels             []string
-	inputLayer         string
-	boxesLayer         string
-	probabilitiesLayer string
-	classesLayer       string
-	boxes              interface{}
-	probabilities      interface{}
-	classes            interface{}
+	predictor *gopytorch.Predictor
+	labels    []string
 }
 
-// New ...
-func NewObjectDetectionPredictor(model dlframework.ModelManifest, os ...options.Option) (common.Predictor, error) {
-	opts := options.New(os...)
-	ctx := opts.Context()
-
+func NewSemanticSegmentationPredictor(model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
+	ctx := context.Background()
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "new_predictor")
 	defer span.Finish()
 
@@ -53,13 +43,13 @@ func NewObjectDetectionPredictor(model dlframework.ModelManifest, os ...options.
 		return nil, errors.New("input type not supported")
 	}
 
-	predictor := new(ObjectDetectionPredictor)
+	predictor := new(SemanticSegmentationPredictor)
 
-	return predictor.Load(ctx, model, os...)
+	return predictor.Load(ctx, model, opts...)
 }
 
 // Download ...
-func (p *ObjectDetectionPredictor) Download(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) error {
+func (p *SemanticSegmentationPredictor) Download(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) error {
 	framework, err := model.ResolveFramework()
 	if err != nil {
 		return err
@@ -70,7 +60,7 @@ func (p *ObjectDetectionPredictor) Download(ctx context.Context, model dlframewo
 		return err
 	}
 
-	ip := &ObjectDetectionPredictor{
+	ip := &SemanticSegmentationPredictor{
 		ImagePredictor: common.ImagePredictor{
 			Base: common.Base{
 				Framework: framework,
@@ -88,8 +78,7 @@ func (p *ObjectDetectionPredictor) Download(ctx context.Context, model dlframewo
 	return nil
 }
 
-// Load ...
-func (p *ObjectDetectionPredictor) Load(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
+func (p *SemanticSegmentationPredictor) Load(ctx context.Context, model dlframework.ModelManifest, opts ...options.Option) (common.Predictor, error) {
 	framework, err := model.ResolveFramework()
 	if err != nil {
 		return nil, err
@@ -100,7 +89,7 @@ func (p *ObjectDetectionPredictor) Load(ctx context.Context, model dlframework.M
 		return nil, err
 	}
 
-	ip := &ObjectDetectionPredictor{
+	ip := &SemanticSegmentationPredictor{
 		ImagePredictor: common.ImagePredictor{
 			Base: common.Base{
 				Framework: framework,
@@ -122,7 +111,7 @@ func (p *ObjectDetectionPredictor) Load(ctx context.Context, model dlframework.M
 	return ip, nil
 }
 
-func (p *ObjectDetectionPredictor) download(ctx context.Context) error {
+func (p *SemanticSegmentationPredictor) download(ctx context.Context) error {
 	span, ctx := tracer.StartSpanFromContext(
 		ctx,
 		tracer.APPLICATION_TRACE,
@@ -179,7 +168,7 @@ func (p *ObjectDetectionPredictor) download(ctx context.Context) error {
 	return nil
 }
 
-func (p *ObjectDetectionPredictor) loadPredictor(ctx context.Context) error {
+func (p *SemanticSegmentationPredictor) loadPredictor(ctx context.Context) error {
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "load_predictor")
 	defer span.Finish()
 
@@ -223,7 +212,7 @@ func (p *ObjectDetectionPredictor) loadPredictor(ctx context.Context) error {
 	return nil
 }
 
-func (p *ObjectDetectionPredictor) GetInputLayerName(reader io.Reader, layer string) (string, error) {
+func (p *SemanticSegmentationPredictor) GetInputLayerName(reader io.Reader, layer string) (string, error) {
 	model := p.Model
 	modelInputs := model.GetInputs()
 	typeParameters := modelInputs[0].GetParameters()
@@ -235,7 +224,7 @@ func (p *ObjectDetectionPredictor) GetInputLayerName(reader io.Reader, layer str
 	return name, nil
 }
 
-func (p *ObjectDetectionPredictor) GetOutputLayerName(reader io.Reader, layer string) (string, error) {
+func (p *SemanticSegmentationPredictor) GetOutputLayerName(reader io.Reader, layer string) (string, error) {
 	model := p.Model
 	modelOutput := model.GetOutput()
 	typeParameters := modelOutput.GetParameters()
@@ -248,7 +237,8 @@ func (p *ObjectDetectionPredictor) GetOutputLayerName(reader io.Reader, layer st
 }
 
 // Predict ...
-func (p *ObjectDetectionPredictor) Predict(ctx context.Context, data interface{}, opts ...options.Option) error {
+func (p *SemanticSegmentationPredictor) Predict(ctx context.Context, data interface{}, opts ...options.Option) error {
+
 	if data == nil {
 		return errors.New("input data nil")
 	}
@@ -260,8 +250,9 @@ func (p *ObjectDetectionPredictor) Predict(ctx context.Context, data interface{}
 
 	fst := gotensors[0]
 	dims := append([]int{len(gotensors)}, fst.Shape()...)
-
-	// TODO support data types other than float32
+	// debug
+	pp.Println(dims)
+	// TODO: support data types other than float32
 	var input []float32
 	for _, t := range gotensors {
 		input = append(input, t.Float32s()...)
@@ -282,69 +273,65 @@ func (p *ObjectDetectionPredictor) Predict(ctx context.Context, data interface{}
 }
 
 // ReadPredictedFeatures ...
-func (p *ObjectDetectionPredictor) ReadPredictedFeatures(ctx context.Context) ([]dlframework.Features, error) {
+func (p *SemanticSegmentationPredictor) ReadPredictedFeatures(ctx context.Context) ([]dlframework.Features, error) {
 	span, ctx := tracer.StartSpanFromContext(ctx, tracer.APPLICATION_TRACE, "read_predicted_features")
 	defer span.Finish()
 
 	outputs, err := p.predictor.ReadPredictionOutput(ctx)
+
+	labels, err := p.GetLabels()
 	if err != nil {
-		return nil, err
+		return nil, errors.New("cannot get the labels")
 	}
 
-	scores := outputs[0].Data().([]float32)
-	boxes := outputs[1].Data().([]float32)
-	var input_classes []float32
-	var input_scores []float32
-	for curObj := 0; curObj < len(boxes)/4; curObj++ {
-		max_score := scores[curObj*len(p.labels)]
-		var max_index int
-		max_index = 0
-		for i := 1; i < len(p.labels); i++ {
-			sc := scores[curObj*len(p.labels)+i]
-			if sc > max_score {
-				max_score = sc
-				max_index = i
+	output_array := outputs[0].Data().([]float32)
+	output_batch := outputs[0].Shape()[0]
+	output_feature := outputs[0].Shape()[1]
+	output_height := outputs[0].Shape()[2]
+	output_width := outputs[0].Shape()[3]
+
+	// convert the output in order to make it compatible with CreateSemanticSegmentFeatures function call
+	masks := make([][][]int64, output_batch)
+	for b := 0; b < output_batch; b++ {
+		masks[b] = make([][]int64, output_height)
+		for h := 0; h < output_height; h++ {
+			masks[b][h] = make([]int64, output_width)
+			for w := 0; w < output_width; w++ {
+				idx := 0
+				cur := output_array[b*output_feature*output_height*output_width+idx*output_height*output_width+h*output_width+w]
+				for f := 1; f < output_feature; f++ {
+					if output_array[b*output_feature*output_height*output_width+f*output_height*output_width+h*output_width+w] > cur {
+						idx = f
+						cur = output_array[b*output_feature*output_height*output_width+idx*output_height*output_width+h*output_width+w]
+					}
+				}
+				masks[b][h][w] = int64(idx)
 			}
 		}
-		input_scores = append(input_scores, float32(max_score))
-		input_classes = append(input_classes, float32(max_index))
 	}
-	dims := []int{1, len(boxes) / 4}
-	tensor_classes := gotensor.New(
-		gotensor.Of(gotensor.Float32),
-		gotensor.WithBacking(input_classes),
-		gotensor.WithShape(dims...),
-	)
-	tensor_scores := gotensor.New(
-		gotensor.Of(gotensor.Float32),
-		gotensor.WithBacking(input_scores),
-		gotensor.WithShape(dims...),
-	)
 
-	return p.CreateBoundingBoxFeatures(ctx, tensor_scores, tensor_classes, outputs[1], p.labels)
+	return p.CreateSemanticSegmentFeatures(ctx, masks, labels)
 }
 
-// Reset ...
-func (p *ObjectDetectionPredictor) Reset(ctx context.Context) error {
+func (p *SemanticSegmentationPredictor) Reset(ctx context.Context) error {
 	return nil
 }
 
-// Close ...
-func (p *ObjectDetectionPredictor) Close() error {
+func (p *SemanticSegmentationPredictor) Close() error {
 	if p.predictor != nil {
 		p.predictor.Close()
 	}
 	return nil
 }
 
-func (p *ObjectDetectionPredictor) Modality() (dlframework.Modality, error) {
-	return dlframework.ImageObjectDetectionModality, nil
+func (p SemanticSegmentationPredictor) Modality() (dlframework.Modality, error) {
+	return dlframework.ImageSemanticSegmentationModality, nil
 }
 
 func init() {
 	config.AfterInit(func() {
 		framework := pytorch.FrameworkManifest
-		agent.AddPredictor(framework, &ObjectDetectionPredictor{
+		agent.AddPredictor(framework, &SemanticSegmentationPredictor{
 			ImagePredictor: common.ImagePredictor{
 				Base: common.Base{
 					Framework: framework,

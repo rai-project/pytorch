@@ -1,13 +1,13 @@
 name: PNasNet_5_Large # name of your model
 framework:
     name: PyTorch # framework for the model
-    version: 1.2 # framework version contraint
+    version: 1.2 # framework version constraint
 version: 1.0 # version information in semantic version format
 container: # containers used to perform model prediction
     # multiple platforms can be specified
     amd64:
-        gpu: raiproject/carml-pytorch:amd64-cpu
-        cpu: raiproject/carml-pytorch:amd64-gpu
+        cpu: raiproject/carml-pytorch:amd64-cpu
+        gpu: raiproject/carml-pytorch:amd64-gpu
     ppc64le:
         cpu: raiproject/carml-pytorch:ppc64le-gpu
         gpu: raiproject/carml-pytorch:ppc64le-gpu
@@ -15,6 +15,7 @@ description: >
     The pre-trained model expects input in mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are expected to be 331. The images have to be loaded in to a range of [0, 1] and then normalized using mean = [0.5, 0.5, 0.5] and std = [0.5, 0.5, 0.5]
 references: # references to papers / websites / etc.. describing the model
     - https://github.com/Cadene/pretrained-models.pytorch#reproducing-results
+    - https://github.com/Cadene/pretrained-models.pytorch/blob/master/pretrainedmodels/models/pnasnet.py
 # license of the model
 license: unrestricted
 # inputs to the model
@@ -30,7 +31,7 @@ inputs:
           color_mode: RGB
           dimensions: [3, 331, 331]
           mean: [127.5, 127.5, 127.5]
-          scale: 127.5 # [127.5, 127.5, 127.5] 
+          scale: 127.5 
 output:
     # the type of the output
     type: classification

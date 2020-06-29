@@ -1,22 +1,24 @@
 name: DPN_98 # name of your model
 framework:
     name: PyTorch # framework for the model
-    version: 1.2 # framework version contraint
+    version: 1.2 # framework version constraint
 version: 1.0 # version information in semantic version format
 container: # containers used to perform model prediction
     # multiple platforms can be specified
     amd64:
-        gpu: raiproject/carml-pytorch:amd64-cpu
-        cpu: raiproject/carml-pytorch:amd64-gpu
+        cpu: raiproject/carml-pytorch:amd64-cpu
+        gpu: raiproject/carml-pytorch:amd64-gpu
     ppc64le:
         cpu: raiproject/carml-pytorch:ppc64le-gpu
         gpu: raiproject/carml-pytorch:ppc64le-gpu
 description: >
     This model is a replication of the model described in the Dual Path Networks publication.
-    The pre-trained model expects input in mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are expected to be 224. The images have to be loaded in to a range of [0, 1] and then normalized using mean = [0.48627450980392156, 0.4588235294117647, 0.40784313725490196] and std = [0.23482446870963955, 0.23482446870963955, 0.23482446870963955]
+    The pre-trained model expects input in mini-batches of 3-channel RGB images of shape (3 x H x W), where H and W are expected to be 224. The images have to be loaded in to a range of [0, 1] and then normalized using mean = [124 / 255, 117 / 255, 104 / 255] and std = [1 / (.0167 * 255), 1 / (.0167 * 255), 1 / (.0167 * 255)]
 references: # references to papers / websites / etc.. describing the model
     - https://github.com/Cadene/pretrained-models.pytorch#reproducing-results
+    - https://github.com/Cadene/pretrained-models.pytorch/blob/master/pretrainedmodels/models/dpn.py
     - https://github.com/cypw/DPNs
+    - https://github.com/oyam/pytorch-DPNs
 # license of the model
 license: unrestricted
 # inputs to the model
@@ -31,8 +33,8 @@ inputs:
           layout: CHW
           color_mode: RGB
           dimensions: [3, 224, 224]
-          mean: [123.99, 117, 104]
-          scale: 59.88 # TODO [59.88, 59.88, 59.88]
+          mean: [124, 117, 104]
+          scale: 59.88
 output:
     # the type of the output
     type: classification
@@ -50,7 +52,7 @@ model: # specifies model graph and weights resources
         false # if set, then the base_url is a url to an archive
         # the graph_path and weights_path then denote the
         # file names of the graph and weights within the archive
-    graph_checksum: 3a91a7fcf28e0b1145327ad7679ade2b #TODO
+    graph_checksum: 6806745213fcd7bf0eec71bfe69d88df
 attributes: # extra network attributes
     kind: CNN # the kind of neural network (CNN, RNN, ...)
     training_dataset: ImageNet # dataset used to for training

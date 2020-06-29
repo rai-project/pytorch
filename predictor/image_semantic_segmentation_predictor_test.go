@@ -2,14 +2,9 @@ package predictor
 
 import (
 	"context"
-	"image"
-	"image/color"
-	"image/jpeg"
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/rai-project/dlframework"
 
 	"github.com/rai-project/dlframework/framework/options"
 	raiimage "github.com/rai-project/image"
@@ -20,9 +15,9 @@ import (
 	gotensor "gorgonia.org/tensor"
 )
 
-func TestImageEnhancement(t *testing.T) {
+func TestSemanticSegmentation(t *testing.T) {
 	py.Register()
-	model, err := py.FrameworkManifest.FindModel("srgan_v1.0:1.0")
+	model, err := py.FrameworkManifest.FindModel("TorchVision_DeepLabv3_Resnet101:1.0")
 	assert.NoError(t, err)
 	assert.NotEmpty(t, model)
 
@@ -37,13 +32,13 @@ func TestImageEnhancement(t *testing.T) {
 		options.Device(device, 0),
 		options.BatchSize(batchSize))
 
-	predictor, err := NewImageEnhancementPredictor(*model, options.WithOptions(opts))
+	predictor, err := NewSemanticSegmentationPredictor(*model, options.WithOptions(opts))
 	assert.NoError(t, err)
 	assert.NotEmpty(t, predictor)
 	defer predictor.Close()
 
 	imgDir, _ := filepath.Abs("./_fixtures")
-	imgPath := filepath.Join(imgDir, "penguin.png")
+	imgPath := filepath.Join(imgDir, "lane_control.jpg")
 	r, err := os.Open(imgPath)
 	if err != nil {
 		panic(err)
@@ -65,9 +60,9 @@ func TestImageEnhancement(t *testing.T) {
 		panic(err)
 	}
 
-	channels := 3
 	height := img.Bounds().Dy()
 	width := img.Bounds().Dx()
+	channels := 3
 
 	input := make([]*gotensor.Dense, batchSize)
 	imgFloats, err := normalizeImageCHW(img, preprocessOpts.MeanImage, preprocessOpts.Scale)
@@ -91,46 +86,11 @@ func TestImageEnhancement(t *testing.T) {
 	pred, err := predictor.ReadPredictedFeatures(ctx)
 	assert.NoError(t, err)
 	if err != nil {
-		panic(err)
+		return
 	}
 
-	f, ok := pred[0][0].Feature.(*dlframework.Feature_RawImage)
-	if !ok {
-		panic("expecting an image feature")
-	}
+	sseg := pred[0][0].GetSemanticSegment()
+	intMask := sseg.GetIntMask()
 
-	fl := f.RawImage.GetFloatList()
-	outWidth := f.RawImage.GetWidth()
-	outHeight := f.RawImage.GetHeight()
-	offset := 0
-	outImg := types.NewRGBImage(image.Rect(0, 0, int(outWidth), int(outHeight)))
-	for h := 0; h < int(outHeight); h++ {
-		for w := 0; w < int(outWidth); w++ {
-			R := uint8(fl[offset+0])
-			G := uint8(fl[offset+1])
-			B := uint8(fl[offset+2])
-			outImg.Set(w, h, color.RGBA{R, G, B, 255})
-			offset += 3
-		}
-	}
-
-	if false {
-		output, err := os.Create("output.jpg")
-		if err != nil {
-			panic(err)
-		}
-		defer output.Close()
-		err = jpeg.Encode(output, outImg, nil)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	assert.Equal(t, int32(1356), outHeight)
-	assert.Equal(t, int32(2040), outWidth)
-	assert.Equal(t, types.RGB{
-		R: 0xc2,
-		G: 0xc2,
-		B: 0xc6,
-	}, outImg.At(0, 0))
+	assert.Equal(t, int32(7), intMask[247039])
 }
